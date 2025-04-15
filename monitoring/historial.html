@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Asistencia</title>
+    <!-- Estilo de Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* Encabezado */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px; /* Ajustada la altura del encabezado */
+            background-color: #151527;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-toggle {
+            cursor: pointer;
+        }
+
+        .menu-toggle .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 4px 0;
+            background-color: #ffffff;
+        }
+
+        .view-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-icon {
+            font-size: 24px; /* Icono de usuario ajustado */
+            color: #fff;
+        }
+
+        .user-text {
+            font-size: 16px;
+        }
+
+        /* Menú lateral */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #151527;
+            transition: left 0.3s;
+            padding-top: 60px;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        /* Contenedor principal */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        /* Contenedor principal */
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* Sección de historial */
+        .historial-container {
+            width: 80%;
+            max-width: 900px;
+            background-color: #000;
+            color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Detalle del colaborador */
+        #detalleColaborador {
+            margin-bottom: 20px;
+        }
+
+        #detalleColaborador p {
+            margin: 5px 0;
+        }
+
+        /* Filtros */
+        #filtros {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #filtros select,
+        #filtros input {
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        /* Tabla */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #444;
+        }
+
+        th {
+            background-color: #222;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #333;
+        }
+
+        .totals {
+            text-align: left;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        /* Botones de exportación */
+        #exportButtons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        #exportButtons button {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #444;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #exportButtons button:hover {
+            background-color: #666;
+        }
+
+/*Cerrar sesión*/
+        /* Estilos para el contenedor del usuario */
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* Estilos del menú desplegable */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            width: 150px;
+            z-index: 1000;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Mostrar el menú cuando tiene la clase 'active' */
+        .dropdown-menu.active {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Encabezado superior -->
+    <header class="header">
+        <div class="menu-toggle" id="menu-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+        <h1 class="view-title">Historial de Asistencia</h1>
+        <div class="user-info" id="userIcon">
+            <i class="fa fa-user user-icon"></i> <!-- Icono de usuario con la clase correcta -->
+            <span id="usernameDisplay" class="user-text">User</span>
+            <div class="dropdown-menu" id="userMenu">
+            <a href="#" id="logout">Cerrar sesión</a>
+        </div>
+    </header>
+
+        <!-- Menú lateral desplegable -->
+        <div class="sidebar" id="sidebar">
+            <a href="../dashboard/dashboard.html">Dashboard</a>
+            <a href="../monitoring/monitoring.html">Monitoreo de Asistencia</a>
+            <a href="../personal/personal.html">Personal</a>
+            <a href="../horarios/horarios.html">Gestión de Horarios</a>
+            <a href="../public/config.html">Configuración</a>
+        </div>
+
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <div class="historial-container">
+            <h1>Historial de Asistencia</h1>
+            <div id="detalleColaborador">
+                <p><strong>Nombre del Colaborador:</strong> Juan Torres García</p>
+                <p><strong>Usuario:</strong> JRTG</p>
+            </div>
+            <div id="filtros">
+                <div>
+                    <select id="filtroAnio">
+                        <option value="">Año</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                    <select id="filtroMes">
+                        <option value="">Mes</option>
+                        <option value="01">Enero</option>
+                        <option value="02">Febrero</option>
+                        <option value="03">Marzo</option>
+                        <option value="04">Abril</option>
+                        <option value="05">Mayo</option>
+                        <option value="06">Junio</option>
+                        <option value="07">Julio</option>
+                        <option value="08">Agosto</option>
+                        <option value="09">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Rango de Fechas:</label>
+                    <input type="date" id="filtroFechaInicio">
+                    <span>a</span>
+                    <input type="date" id="filtroFechaFin">
+                </div>
+            </div>            
+            <table id="tablaAsistencias" border="1">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora de Entrada</th>
+                        <th>Hora de Salida</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaAsistenciasBody">
+                    <!-- Aquí se insertarán las filas dinámicamente -->
+                </tbody>
+            </table>            
+            <div class="totals">
+                <p><strong>Días Trabajados:</strong> <span id="diasTrabajados">0 días</span></p>
+                <p><strong>Tardanzas:</strong> <span id="tardanzas">0</span></p>
+                <p><strong>Faltas:</strong> <span id="faltas">0</span></p>
+                <p><strong>Horas Trabajadas:</strong> <span id="horasTrabajadas">0 horas</span></p>
+                <!--<p><strong>Horas Objetivo:</strong> <span id="horasObjetivo">48 horas</span></p>-->
+            </div>
+            <div id="exportButtons">
+                <button id="btnExcel">Exportar a Excel</button>
+                <button id="btnPDF">Exportar a PDF</button>
+                <button id="btnRegresar">Regresar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // Función para abrir y cerrar el menú lateral
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const username = localStorage.getItem("username"); // Recuperar el usuario
+            if (username) {
+                const displayName = username.split('@')[0]; // Obtener solo la parte antes del '@'
+                document.getElementById("usernameDisplay").textContent = displayName;
+            }
+        });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const userType = localStorage.getItem("userType");
+
+    // Verificar si el usuario es administrador
+    if (userType !== 'administrador') {
+        alert("No tienes permiso para acceder a esta página.");
+        window.location.href = '/dashboard/dashboard.html'; // Redirigir a la página de inicio o a otra página
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const usuarioSeleccionado = localStorage.getItem("usuarioSeleccionado");
+    console.log("👤 Usuario recuperado del localStorage:", usuarioSeleccionado);
+
+    if (!usuarioSeleccionado) {
+        console.error("❌ No se encontró un usuario en localStorage");
+        return;
+    }
+
+    fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLjmPQb4xQ-BZ66RGv_nJ4pxm9dKylOMUPzxuNFBN7zr83OzaYtoo92UYS7jSHpLbLxbUWpVKrsnCW3-e-B7y8ECea5jUFlDERMUugHXpM9vr7MAAJEGzCNUSXomDsyU2kykLNaJ2wsVjALsBHi-QFgHg5H1DtAj8VeHu9zCbzC9ElH6JSrKnmDvIfhBapj55bRH-ciZAX1o1GqPdNdgKZOjKZ1YGT1WUtIZRjs1POMUEJmG7Jcx_0wMFgH9tTif_W9gK1_2-6Pox21Q-hm9zbuSLfdCG5bNhXGnaGMapQ1_9_7RkKM&lib=M08DGLt52LVTHBMB4s15oxWbsYizgyvoY")
+        .then(res => res.json())
+        .then(data => {
+            console.log("📦 Datos recibidos de la API:", data);
+
+            // 🔍 Buscar al usuario que coincide con el id_empleado
+            const usuario = data.find(persona => persona.id_empleado === usuarioSeleccionado);
+
+            if (!usuario) {
+                console.warn("⚠️ Usuario no encontrado en la API.");
+                return;
+            }
+
+            // 📝 Insertar los datos en el HTML
+            document.getElementById("detalleColaborador").innerHTML = `
+                <p><strong>Nombre del Colaborador:</strong> ${usuario.nombre}</p>
+                <p><strong>Usuario:</strong> ${usuario.id_empleado}</p>
+            `;
+
+            // Aquí podrías hacer otra llamada para mostrar el historial de asistencias usando usuario.id_empleado
+
+        })
+        .catch(error => {
+            console.error("❌ Error al obtener los datos:", error);
+        });
+});
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const usuarioSeleccionado = localStorage.getItem("usuarioSeleccionado");
+
+    if (!usuarioSeleccionado) {
+        console.warn("No hay usuario seleccionado.");
+        return;
+    }
+
+    // Cargar los datos del usuario (nombre + ID)
+    await cargarDatosColaborador(usuarioSeleccionado);
+
+    // Cargar el historial de asistencias
+    cargarHistorial(usuarioSeleccionado);
+});
+
+async function cargarDatosColaborador(usuarioID) {
+    const url = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLjmPQb4xQ-BZ66RGv_nJ4pxm9dKylOMUPzxuNFBN7zr83OzaYtoo92UYS7jSHpLbLxbUWpVKrsnCW3-e-B7y8ECea5jUFlDERMUugHXpM9vr7MAAJEGzCNUSXomDsyU2kykLNaJ2wsVjALsBHi-QFgHg5H1DtAj8VeHu9zCbzC9ElH6JSrKnmDvIfhBapj55bRH-ciZAX1o1GqPdNdgKZOjKZ1YGT1WUtIZRjs1POMUEJmG7Jcx_0wMFgH9tTif_W9gK1_2-6Pox21Q-hm9zbuSLfdCG5bNhXGnaGMapQ1_9_7RkKM&lib=M08DGLt52LVTHBMB4s15oxWbsYizgyvoY";
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const usuario = data.find(persona => persona.id_empleado === usuarioID);
+        
+        if (usuario) {
+            document.getElementById("detalleColaborador").innerHTML = `
+                <p><strong>Nombre del Colaborador:</strong> ${usuario.nombre}</p>
+                <p><strong>Usuario:</strong> ${usuario.id_empleado}</p>
+            `;
+        } else {
+            console.warn("Usuario no encontrado.");
+        }
+    } catch (error) {
+        console.error("Error cargando datos del colaborador:", error);
+    }
+}
+
+async function cargarHistorial(usuarioID) {
+    const url = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLiLTf335WpspoIcEtY-xRF-Kr288YNw-KVhwLOa_1iYyPYFWn4GaSSrX5hYXspTOsJbC6sKTG_e_pgITj6rf5AvbQJnaVBYZ8wVbZpUNZUKj7ARCufgxTc4KBW_hHrVpwwbdPLzSKV-dDXJH-MmwfyIfk7uOPxUYJg4tlocL_3_7-yEiaq1_havjEtjXBPuzPfggiHnQgIRnbdenOQP-eCv-A3xc2h4dzh-e7TJjdUeCfNBADtTnsFGTXrxOPZ5U1GvNCTOcDGmRrudtc061yzK8TO9IfdOMmZk97Ss8bRU0r0tZkg&lib=M08DGLt52LVTHBMB4s15oxWbsYizgyvoY";
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const registros = data.filter(item => item.id_empleado === usuarioID);
+        const tbody = document.getElementById("tablaAsistenciasBody");
+        tbody.innerHTML = "";
+
+        let diasTrabajados = 0;
+        let tardanzas = 0;
+        let faltas = 0;
+        let horasTotales = 0;
+
+        registros.forEach(item => {
+            const fecha = new Date(item.fecha_hora).toLocaleDateString();
+            const entrada = item.entrada ? new Date(item.entrada).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+            const salida = item.salida ? new Date(item.salida).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+
+            // Determinar estado
+            let estado = "Puntual";
+            if (!item.entrada) {
+                estado = "Falta";
+                faltas++;
+            } else if (item.entrada && !item.salida) {
+                estado = "En curso";
+                diasTrabajados++;
+            } else if (item.tardanza && item.tardanza !== "1899-12-30T00:00:00.000Z") {
+                estado = "Tardanza";
+                tardanzas++;
+                diasTrabajados++;
+            } else {
+                estado = "Puntual";
+                diasTrabajados++;
+            }
+
+            // Calcular horas trabajadas si existe
+            let horas = 0;
+            if (item.horas_laboradas) {
+                const duracion = new Date(item.horas_laboradas);
+                horas = duracion.getUTCHours() + duracion.getUTCMinutes() / 60;
+                horasTotales += horas;
+            }
+
+            // Insertar fila en la tabla
+            const fila = `
+                <tr>
+                    <td>${fecha}</td>
+                    <td>${entrada}</td>
+                    <td>${salida}</td>
+                    <td>${estado}</td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML("beforeend", fila);
+        });
+
+        // Actualizar resumen
+        document.getElementById("diasTrabajados").textContent = `${diasTrabajados} días`;
+        document.getElementById("tardanzas").textContent = tardanzas;
+        document.getElementById("faltas").textContent = faltas;
+        document.getElementById("horasTrabajadas").textContent = `${horasTotales.toFixed(1)} horas`;
+
+    } catch (error) {
+        console.error("Error cargando historial de asistencias:", error);
+    }
+}
+
+document.getElementById("filtroAnio").addEventListener("change", () => aplicarFiltros());
+document.getElementById("filtroMes").addEventListener("change", () => aplicarFiltros());
+document.getElementById("filtroFechaInicio").addEventListener("change", () => aplicarFiltros());
+document.getElementById("filtroFechaFin").addEventListener("change", () => aplicarFiltros());
+
+let registrosGlobal = []; // guardamos todos los registros aquí
+
+async function cargarHistorial(usuarioID) {
+    const url = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLiLTf335WpspoIcEtY-xRF-Kr288YNw-KVhwLOa_1iYyPYFWn4GaSSrX5hYXspTOsJbC6sKTG_e_pgITj6rf5AvbQJnaVBYZ8wVbZpUNZUKj7ARCufgxTc4KBW_hHrVpwwbdPLzSKV-dDXJH-MmwfyIfk7uOPxUYJg4tlocL_3_7-yEiaq1_havjEtjXBPuzPfggiHnQgIRnbdenOQP-eCv-A3xc2h4dzh-e7TJjdUeCfNBADtTnsFGTXrxOPZ5U1GvNCTOcDGmRrudtc061yzK8TO9IfdOMmZk97Ss8bRU0r0tZkg&lib=M08DGLt52LVTHBMB4s15oxWbsYizgyvoY";
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        registrosGlobal = data.filter(item => item.id_empleado === usuarioID);
+        aplicarFiltros(); // muestra inicialmente todos o filtrados si hay filtros activos
+    } catch (error) {
+        console.error("Error cargando historial de asistencias:", error);
+    }
+}
+
+function aplicarFiltros() {
+    const anio = document.getElementById("filtroAnio").value;
+    const mes = document.getElementById("filtroMes").value;
+    const fechaInicio = document.getElementById("filtroFechaInicio").value;
+    const fechaFin = document.getElementById("filtroFechaFin").value;
+
+    let filtrados = [...registrosGlobal];
+
+    // Filtro por año y mes
+    if (anio || mes) {
+        filtrados = filtrados.filter(item => {
+            const fecha = new Date(item.fecha_hora);
+            const itemAnio = fecha.getFullYear().toString();
+            const itemMes = (fecha.getMonth() + 1).toString().padStart(2, "0");
+
+            return (!anio || itemAnio === anio) && (!mes || itemMes === mes);
+        });
+    }
+
+    // Filtro por rango de fechas
+    if (fechaInicio && fechaFin) {
+        const ini = new Date(fechaInicio);
+        const fin = new Date(fechaFin);
+
+        filtrados = filtrados.filter(item => {
+            const fecha = new Date(item.fecha_hora);
+            return fecha >= ini && fecha <= fin;
+        });
+    }
+
+    mostrarRegistros(filtrados);
+}
+
+function mostrarRegistros(registros) {
+    const tbody = document.getElementById("tablaAsistenciasBody");
+    tbody.innerHTML = "";
+
+    let diasTrabajados = 0;
+    let tardanzas = 0;
+    let faltas = 0;
+    let horasTotales = 0;
+
+    registros.forEach(item => {
+        const fecha = new Date(item.fecha_hora).toLocaleDateString();
+        const entrada = item.entrada ? new Date(item.entrada).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+        const salida = item.salida ? new Date(item.salida).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+
+        let estado = "Puntual";
+        if (!item.entrada) {
+            estado = "Falta";
+            faltas++;
+        } else if (item.entrada && !item.salida) {
+            estado = "En curso";
+            diasTrabajados++;
+        } else if (item.tardanza && item.tardanza !== "1899-12-30T00:00:00.000Z") {
+            estado = "Tardanza";
+            tardanzas++;
+            diasTrabajados++;
+        } else {
+            estado = "Puntual";
+            diasTrabajados++;
+        }
+
+        let horas = 0;
+        if (item.horas_laboradas) {
+            const duracion = new Date(item.horas_laboradas);
+            horas = duracion.getUTCHours() + duracion.getUTCMinutes() / 60;
+            horasTotales += horas;
+        }
+
+        const fila = `
+            <tr>
+                <td>${fecha}</td>
+                <td>${entrada}</td>
+                <td>${salida}</td>
+                <td>${estado}</td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML("beforeend", fila);
+    });
+
+    // Resumen
+    document.getElementById("diasTrabajados").textContent = `${diasTrabajados} días`;
+    document.getElementById("tardanzas").textContent = tardanzas;
+    document.getElementById("faltas").textContent = faltas;
+    document.getElementById("horasTrabajadas").textContent = `${horasTotales.toFixed(1)} horas`;
+}
+
+// 🟢 Función para obtener historial del usuario y mostrarlo en la tabla
+function formatearHora(hora) {
+    if (!hora || hora === "null") return "--:--"; // Si la hora es nula o no válida
+
+    // Si la hora viene como '1970-01-01T15:56:00'
+    if (hora.includes("T")) {
+        return hora.split("T")[1].slice(0, 5); // Extrae solo HH:mm
+    }
+
+    // Si la hora ya viene en formato HH:mm:ss o HH:mm:ss.000
+    if (hora.includes(":")) {
+        return hora.split(":").slice(0, 2).join(":"); // Devuelve solo HH:mm
+    }
+
+    return "--:--"; // Si no tiene formato válido
+}
+
+// 🟢 Función para actualizar el resumen de asistencia
+function actualizarResumen(historial) {
+
+    if (!Array.isArray(historial)) {
+        console.error("❌ El parámetro 'historial' no es un arreglo:", historial);
+        return; // Evita que el resto de la función se ejecute si hay un problema
+    }
+
+    let diasTrabajados = 0;
+    let tardanzas = 0;
+    let faltas = 0;
+    let horasTrabajadas = 0;
+    const horasObjetivo = 48; // Meta de horas semanales
+
+    historial.forEach((registro) => {
+        let estadoIngreso = registro.estadoIngreso || "Sin registro";
+        let horaEntrada = registro.horaEntrada || "--:--";
+        let horaSalida = registro.horaSalida || "--:--";
+
+        // 🔹 Contar días trabajados, tardanzas y faltas correctamente
+        if (estadoIngreso === "A tiempo" || estadoIngreso === "Tardanza") {
+            diasTrabajados++; // Se considera trabajado
+        }
+        if (estadoIngreso === "Tardanza") {
+            tardanzas++;
+        }
+        if (estadoIngreso === "Sin registro") {
+            faltas++;
+        }
+
+        // 🔹 Calcular horas trabajadas solo si hay entrada y salida válidas
+        if (horaEntrada !== "--:--" && horaSalida !== "--:--") {
+            let [hEntrada, mEntrada] = horaEntrada.split(":").map(Number);
+            let [hSalida, mSalida] = horaSalida.split(":").map(Number);
+
+            let minutosTrabajados = (hSalida * 60 + mSalida) - (hEntrada * 60 + mEntrada);
+            if (minutosTrabajados > 0) {
+                horasTrabajadas += minutosTrabajados / 60;
+            }
+        }
+    });
+
+    // 🔹 Si no hay registros, aseguramos que las horas trabajadas sean 0
+    if (historial.length === 0) {
+        horasTrabajadas = 0;
+    }
+
+    // 🟢 **Asignar los valores a los elementos HTML correctamente**
+    document.getElementById("diasTrabajados").textContent = diasTrabajados;
+    document.getElementById("tardanzas").textContent = tardanzas;
+    document.getElementById("faltas").textContent = faltas;
+    document.getElementById("horasTrabajadas").textContent = horasTrabajadas.toFixed(2) + " horas";
+    document.getElementById("horasObjetivo").textContent = horasObjetivo + " horas";
+}
+
+    document.getElementById("btnExcel").addEventListener("click", exportToExcel);
+    document.getElementById("btnPDF").addEventListener("click", exportToPDF);
+
+    function exportToExcel() {
+        let table = document.querySelector("table"); // Seleccionar la tabla
+        let ws = XLSX.utils.table_to_sheet(table);  // Convertir a hoja de Excel
+        let wb = XLSX.utils.book_new();             // Crear nuevo libro
+        XLSX.utils.book_append_sheet(wb, ws, "Historial");
+        XLSX.writeFile(wb, "Historial_Asistencia.xlsx"); // Descargar archivo
+    }
+    async function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        let doc = new jsPDF();
+
+        doc.text("Historial de Asistencia", 14, 10); // Título del PDF
+
+        let table = document.querySelector("table");
+        if (!table) {
+            console.error("❌ No se encontró la tabla en el documento.");
+            return;
+        }
+        let headers = [];
+        let data = [];
+
+        // Obtener los encabezados de la tabla
+        table.querySelectorAll("thead tr th").forEach(th => {
+            headers.push(th.innerText);
+        });
+
+        // Obtener las filas de la tabla
+        table.querySelectorAll("tbody tr").forEach(tr => {
+            let rowData = [];
+            tr.querySelectorAll("td").forEach(td => {
+                rowData.push(td.innerText);
+            });
+            data.push(rowData);
+        });
+
+        if (data.length === 0) {
+            console.warn("⚠️ No hay datos para exportar.");
+            return;
+        }
+
+        // Generar tabla en PDF con autoTable
+        doc.autoTable({
+            head: [headers],
+            body: data,
+            startY: 20,
+            theme: 'striped',
+            styles: { fontSize: 10 },
+            headStyles: { fillColor: [22, 160, 133] }, // Color de encabezado verde
+        });
+
+        doc.save("Historial_Asistencia.pdf"); // Descargar PDF
+    }
+
+// Llamar a la función después de cargar la tabla
+document.addEventListener("DOMContentLoaded", actualizarResumen);
+
+function calcularHorasTrabajadas() {
+    let totalMinutos = 0;
+    let diasTrabajados = 0;
+    let filas = document.querySelectorAll("#tablaAsistenciasBody tr");
+
+    filas.forEach((fila, index) => {
+        let entrada = fila.cells[1].textContent.trim();
+        let salida = fila.cells[2].textContent.trim();
+        let estado = fila.cells[3].textContent.trim();
+
+        console.log(`Fila ${index + 1}: Entrada = ${entrada}, Salida = ${salida}, Estado = ${estado}`);
+
+        // Si la entrada o la salida son "--:--", se consideran como 0 minutos
+        let [hEntrada, mEntrada] = entrada !== "--:--" ? entrada.split(":").map(Number) : [0, 0];
+        let [hSalida, mSalida] = salida !== "--:--" ? salida.split(":").map(Number) : [0, 0];
+
+        let minutosEntrada = hEntrada * 60 + mEntrada;
+        let minutosSalida = hSalida * 60 + mSalida;
+
+        let minutosTrabajados = Math.max(0, minutosSalida - minutosEntrada);
+        totalMinutos += minutosTrabajados;
+        diasTrabajados++;
+    });
+
+    let horas = Math.floor(totalMinutos / 60);
+    let minutos = totalMinutos % 60;
+
+    document.getElementById("horasTrabajadas").textContent = `${horas}h ${minutos}m`;
+    document.getElementById("diasTrabajados").textContent = `${diasTrabajados} días`;
+
+    console.log(`🔹 Total Minutos Trabajados: ${totalMinutos}`);
+    console.log(`🔹 Total Días Trabajados: ${diasTrabajados}`);
+}
+
+// Ejecutar la función cuando la tabla haya sido actualizada
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(calcularHorasTrabajadas, 1000); // Retraso para asegurar que la tabla ya cargó
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const userIcon = document.getElementById("userIcon");
+    const userMenu = document.getElementById("userMenu");
+    const logoutBtn = document.getElementById("logout");
+
+    // Alternar el menú al hacer clic en el usuario
+    userIcon.addEventListener("click", function(event) {
+        userMenu.classList.toggle("active");
+        event.stopPropagation(); // Evita que el clic se propague
+    });
+
+    // Cerrar el menú si se hace clic fuera de él
+    document.addEventListener("click", function(event) {
+        if (!userIcon.contains(event.target)) {
+            userMenu.classList.remove("active");
+        }
+    });
+
+    // Redirigir a login.html al hacer clic en "Cerrar sesión"
+    logoutBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/login";
+    });
+});
+
+  // Suponiendo que este código está llenando la tabla de historial
+  function llenarTabla(historial) {
+    let tbody = document.getElementById("tabla-historial").getElementsByTagName("tbody")[0];
+    tbody.innerHTML = "";
+
+    historial.forEach((registro) => {
+      let fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td>${registro.fecha}</td>
+        <td>${registro.horaEntrada || '--:--'}</td>
+        <td>${registro.horaSalida || '--:--'}</td>
+        <td>${registro.estadoIngreso || 'No registrado'}</td> <!-- Se cambió asistencia por estadoIngreso -->
+      `;
+      tbody.appendChild(fila);
+    });
+  }
+    </script>
+</body>
+</html>

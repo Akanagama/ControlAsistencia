@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        /* Encabezado */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #151527; /* Fondo gris oscuro */
+            color: #ffffff; /* Texto blanco */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-toggle {
+            cursor: pointer;
+        }
+
+        .menu-toggle .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 4px 0;
+            background-color: #ffffff;
+        }
+
+        .view-title {
+            font-size: 18px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Contenedor principal */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        /* Menú lateral */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px; /* Menú escondido por defecto */
+            width: 250px;
+            height: 100%;
+            background-color: #2A2A44;
+            transition: left 0.3s;
+            padding-top: 60px;
+            z-index: 1000; /* Asegura que el menú se sobreponga */
+        }
+
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .sidebar.active {
+            left: 0; /* Muestra el menú cuando se activa */
+        }
+
+        /* General */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            width: 100%; /* O un ancho específico, como 80% */
+    max-width: 1200px; /* Para mantenerlo alineado */
+    margin: 0 auto; /* Centra el contenedor */
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column; /* Cambiado a columna para centrar */
+            gap: 20px;
+            margin-bottom: 30px;
+            width: 100%; /* Asegura que ocupe el ancho máximo del contenedor */
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr; /* Tres columnas */
+            gap: 20px;
+            width: 100%;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column; /* Organiza los inputs y selects verticalmente */
+            gap: 10px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px; /* Ajusta el ancho sin que se estiren tanto */
+            box-sizing: border-box; /* Incluye el padding en el cálculo del ancho */
+        }
+
+        /* Títulos de los inputs */
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* Ajustes para que el usuario ocupe toda la primera fila */
+        .form-container .form-group:first-child {
+            grid-column: span 3; /* El primer campo ocupa las tres columnas */
+        }
+
+        .button-group {
+            grid-column: span 3; /* Asegura que los botones ocupen toda la fila */
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-group button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #151527;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .button-group button:hover {
+            background-color: #555;
+        }
+
+        /* Estilo para el contenedor que envuelve la tabla */
+        .table-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            padding: 0px;
+            width: 100%; /* Asegura que ocupe todo el ancho disponible */
+            max-width: 1300px; /* Debe coincidir con el formulario */
+            margin: 0 auto; /* Centra la tabla */
+            margin-top: 20px; /* Espacio entre el formulario y la tabla */
+            box-sizing: border-box;
+        }
+
+        /* Estilo de la tabla */
+        .styled-table {
+            width: 100%;
+            max-width: 1300px; /* Ancho máximo para la tabla */
+            margin: 0 auto; /* Centra la tabla en el contenedor */
+            border-collapse: collapse;
+        }
+
+        .styled-table thead tr {
+            background-color: #151527;
+            color: #fff;
+            text-align: left;
+        }
+
+        .styled-table th, .styled-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        table th:first-child {
+            text-align: center;
+            width: 50px; /* Ajusta el ancho de la columna de las casillas */
+        }
+
+        table td:first-child {
+            text-align: center;
+        }
+
+        .styled-table th {
+        background-color: #151527;
+        color: white;
+        }
+
+        .styled-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table th, table td {
+            text-align: center;
+            white-space: nowrap; /* Evitar saltos de línea en las columnas */
+        }
+
+        /* Estilo del icono y texto del usuario */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-icon {
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .user-text {
+            font-size: 16px;
+        }
+
+        /*Cerrar sesión*/
+        /* Estilos para el contenedor del usuario */
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* Estilos del menú desplegable */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            width: 150px;
+            z-index: 1000;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Mostrar el menú cuando tiene la clase 'active' */
+        .dropdown-menu.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado superior -->
+    <header class="header">
+        <div class="menu-toggle" id="menu-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+        <h1 class="view-title">Personal</h1>
+        <div class="user-info" id="userIcon">
+            <i class="fa fa-user user-icon"></i> <!-- Icono de usuario con la clase correcta -->
+            <span id="usernameDisplay" class="user-text">User</span>
+            <div class="dropdown-menu" id="userMenu">
+            <a href="#" id="logout">Cerrar sesión</a>
+        </div>
+    </header>
+
+    <!-- Menú lateral -->
+    <div class="sidebar" id="sidebar">
+        <a href="../dashboard/dashboard.html">Dashboard</a>
+        <a href="../monitoring/monitoring.html">Monitoreo de Asistencia</a>
+        <a href="../personal/personal.html">Personal</a>
+        <a href="../horarios/horarios.html">Gestión de Horarios</a>
+        <a href="../public/config.html">Configuración</a>
+    </div>
+
+    <main class="main-content">
+        <div class="container">
+            <h1 class="title">Detalles de Personal</h1>
+            <div class="content">
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="usuario">Nuevos Usuarios:</label>
+                        <select id="usuarios">
+                            <option value="">Seleccione un usuario</option>
+                          </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="codigoUsuario">Código del Usuario:</label>
+                        <input type="text" id="codigoUsuario" readonly>
+                    </div>                    
+
+                    <div class="form-group">
+                        <label for="usuarioFirestore">Usuario Registrado (Correo):</label>
+                        <select id="usuarioFirestore">
+                            <option value="">Seleccione un usuario registrado</option>
+                        </select>
+                    </div>                    
+                
+                    <div class="form-group">
+                        <label for="telefono">Teléfono:</label>
+                        <input type="tel" id="telefono" placeholder="Teléfono" required>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="fecha">Fecha de Inicio:</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="modalidad">Modalidad:</label>
+                        <select id="modalidad" name="modalidad" required>
+                            <option value="">Seleccione modalidad</option>
+                            <!-- Las opciones se generarán dinámicamente desde la base de datos -->
+                        </select>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="area">Área:</label>
+                        <select id="area" name="area" required>
+                            <option value="">Seleccione área</option>
+                            <!-- Las opciones se generarán dinámicamente desde la base de datos -->
+                        </select>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="puesto">Puesto:</label>
+                        <select id="puesto" name="puesto" required>
+                            <option value="">Seleccione un puesto</option>
+                        </select>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="cargo">Cargo:</label>
+                        <select id="cargo" name="cargo" required>
+                            <option value="">Seleccione un cargo</option>
+                            <!-- Las opciones se generarán dinámicamente desde la base de datos -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="turno">Turno:</label>
+                        <select id="turno" name="turno" required>
+                            <option value="">Seleccione un turno</option>
+                            <!-- Las opciones se generarán dinámicamente desde la base de datos -->
+                        </select>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="saveButton">Agregar detalles al Usuario</button>
+                        <button id="editButton">Modificar detalles del Usuario</button>
+                    </div>
+                </div>                
+                    </form>
+                </div>
+                <!-- Contenedor para la tabla, ahora centrado -->
+                <div class="table-container">
+                        <table class="styled-table">
+                            <thead>
+                                <tr>
+                                    <th></th> <!-- Nueva columna para las casillas -->
+                                    <th>Usuario</th>
+                                    <!--<th>Nombres</th>-->
+                                    <!--<th>Apellidos</th>-->
+                                    <th>Fecha de Inicio</th>
+                                    <th>Teléfono</th>
+                                    <th>Modalidad</th>
+                                    <th>Área</th>
+                                    <th>Cargo</th>
+                                    <th>Puesto</th>
+                                    <th>Turno</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox" name="select-collaborator"></td> <!-- Casilla -->
+                                        <!--<td>JRTG</td>-->
+                                        <!--<td>Juan</td>-->
+                                        <td>Torres García</td>
+                                        <td>08/01/2025</td>
+                                        <td>941526387</td>
+                                        <td>Híbrida</td>
+                                        <td>RR.HH</td>
+                                        <td>Supervisor</td>
+                                        <td>Supervisor</td>
+                                        <td>Mañana</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { setDoc, doc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        // Configuración Firebase
+        const firebaseConfig = {
+        apiKey: "AIzaSyA6DLJMhI__pHccfQAKP-SG1JtDTh2MTU8",
+        authDomain: "controlasistencia-366c2.firebaseapp.com",
+        projectId: "controlasistencia-366c2",
+        storageBucket: "controlasistencia-366c2.appspot.com",
+        messagingSenderId: "119969881677",
+        appId: "1:119969881677:web:1a1e6c5ad0c2139027c604",
+        measurementId: "G-LR45Q47GC0"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.remove('active');
+            }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('[data-view]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    redirectToView(this.dataset.view);
+                });
+            });
+        });
+
+        // Menú hamburguesa
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('active');
+        });
+        document.addEventListener('click', (event) => {
+        if (!document.getElementById('sidebar').contains(event.target) && !document.getElementById('menu-toggle').contains(event.target)) {
+            document.getElementById('sidebar').classList.remove('active');
+        }
+        });
+
+        // Cerrar el menú al hacer clic fuera del mismo
+document.addEventListener('click', (event) => {
+            if (sidebar && menuToggle) { // Asegurar que los elementos existen
+                if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+            });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const username = localStorage.getItem("username"); // Recuperar el usuario
+            if (username) {
+                const displayName = username.split('@')[0]; // Obtener solo la parte antes del '@'
+                document.getElementById("usernameDisplay").textContent = displayName;
+            }
+        });
+
+        // Cargar usuarios desde Google Sheets API
+        async function cargarUsuariosDesdeAPI() {
+            const select = document.getElementById('usuarios');
+            if (!select) return;
+            select.innerHTML = '<option value="">Cargando usuarios...</option>';
+
+            try {
+                // Obtener los usuarios registrados en Firestore para filtrar
+                const usuariosReg = await obtenerUsuariosRegistrados();
+
+                // Llamar a la API para obtener los usuarios nuevos
+                const response = await fetch('https://script.google.com/macros/s/AKfycbz26keIkxQpR-6bLVWGf-X_tTgqhCwsLXS4JexMjpcPrB7aq9WPiwq5c7Nr-bf46D5J/exec?tipo=personal');
+                const data = await response.json();
+                select.innerHTML = '<option value="">Seleccione un usuario</option>';
+
+                // Filtrar usuarios que no están registrados
+                data
+                    .filter(usuario => usuario.id_empleado && usuario.nombre && !usuariosReg.includes(usuario.id_empleado))
+                    .forEach(usuario => {
+                        const option = document.createElement('option');
+                        option.value = usuario.id_empleado;
+                        option.textContent = usuario.nombre;
+                        select.appendChild(option);
+                    });
+            } catch (err) {
+                console.error('Error al cargar usuarios:', err);
+                select.innerHTML = '<option value="">Error al cargar usuarios</option>';
+            }
+        }
+
+                // Mostrar ID de usuario en campo de texto
+                const selectUsuarios = document.getElementById('usuarios');
+                if (selectUsuarios) {
+                selectUsuarios.addEventListener('change', function () {
+                    const selectedOption = this.options[this.selectedIndex];
+                    document.getElementById('codigoUsuario').value = selectedOption.value;
+                });
+                }
+
+        // Obtener los usuarios registrados en Firestore (correo electrónico)
+        async function obtenerUsuariosRegistrados() {
+            const usuarios = [];
+            try {
+                const snapshot = await getDocs(collection(db, 'usuarios'));
+                snapshot.forEach(doc => {
+                    const email = doc.id; // El email es el ID del documento
+                    usuarios.push(email);
+                });
+            } catch (err) {
+                console.error('Error al cargar usuarios registrados:', err);
+            }
+            return usuarios;
+        }
+
+                // Cargar usuarios registrados en Firestore (correo)
+        async function cargarUsuariosRegistrados() {
+            const select = document.getElementById('usuarioFirestore');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">Cargando usuarios registrados...</option>';
+
+            try {
+                const snapshot = await getDocs(collection(db, 'usuarios'));
+                select.innerHTML = '<option value="">Seleccione un usuario registrado</option>';
+
+                snapshot.forEach(doc => {
+                    const email = doc.id; // El email es el ID del documento
+                    const option = document.createElement('option');
+                    option.value = email;
+                    option.textContent = email;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error cargando usuarios registrados:', err);
+                select.innerHTML = '<option value="">Error al cargar usuarios</option>';
+            }
+        }
+
+                // Cargar modalidades desde Firestore
+        async function cargarModalidades() {
+            const select = document.getElementById('modalidad');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">Cargando modalidades...</option>';
+
+            try {
+                const snapshot = await getDocs(collection(db, 'modalidades'));
+                select.innerHTML = '<option value="">Seleccione modalidad</option>';
+
+                snapshot.forEach(doc => {
+                    const modalidad = doc.data().nombremodalidad; // Usar 'nombremodalidad' de Firestore
+                    const option = document.createElement('option');
+                    option.value = modalidad;
+                    option.textContent = modalidad;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error al cargar modalidades:', err);
+                select.innerHTML = '<option value="">Error al cargar modalidades</option>';
+            }
+        }
+
+        // Cargar áreas desde Firestore
+        async function cargarAreas() {
+            const select = document.getElementById('area');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">Cargando áreas...</option>';
+
+            try {
+                const snapshot = await getDocs(collection(db, 'areas'));
+                select.innerHTML = '<option value="">Seleccione área</option>';
+
+                snapshot.forEach(doc => {
+                    const area = doc.data().nombrearea; // Usar 'nombrearea' de Firestore
+                    const option = document.createElement('option');
+                    option.value = area;
+                    option.textContent = area;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error al cargar áreas:', err);
+                select.innerHTML = '<option value="">Error al cargar áreas</option>';
+            }
+        }
+
+        // Cargar puestos desde Firestore
+        async function cargarPuestos() {
+            const select = document.getElementById('puesto');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">Cargando puestos...</option>';
+
+            try {
+                const snapshot = await getDocs(collection(db, 'puestos'));
+                select.innerHTML = '<option value="">Seleccione puesto</option>';
+
+                snapshot.forEach(doc => {
+                    const puesto = doc.data().nombrepuesto; // Usar 'nombrepuesto' de Firestore
+                    const option = document.createElement('option');
+                    option.value = puesto;
+                    option.textContent = puesto;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error al cargar puestos:', err);
+                select.innerHTML = '<option value="">Error al cargar puestos</option>';
+            }
+        }
+
+        // Cargar cargos desde Firestore
+        async function cargarCargos() {
+            const select = document.getElementById('cargo');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">Cargando cargos...</option>';
+
+            try {
+                const snapshot = await getDocs(collection(db, 'cargos'));
+                select.innerHTML = '<option value="">Seleccione cargo</option>';
+
+                snapshot.forEach(doc => {
+                    const cargo = doc.data().nombrecargo; // Usar 'nombrecargo' de Firestore
+                    const option = document.createElement('option');
+                    option.value = cargo;
+                    option.textContent = cargo;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error al cargar cargos:', err);
+                select.innerHTML = '<option value="">Error al cargar cargos</option>';
+            }
+        }
+
+        // Cargar turnos desde Firestore
+        async function cargarTurnos() {
+            const select = document.getElementById('turno');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">Cargando turnos...</option>';
+
+            try {
+                const snapshot = await getDocs(collection(db, 'turnos'));
+                select.innerHTML = '<option value="">Seleccione turno</option>';
+
+                snapshot.forEach(doc => {
+                    const turno = doc.data().nombreturno; // Usar 'nombreturno' de Firestore
+                    const option = document.createElement('option');
+                    option.value = turno;
+                    option.textContent = turno;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error al cargar turnos:', err);
+                select.innerHTML = '<option value="">Error al cargar turnos</option>';
+            }
+        }
+
+                // Botón guardar
+        document.getElementById('saveButton')?.addEventListener('click', async function (event) {
+            event.preventDefault();  // Evita que el formulario se envíe de forma predeterminada
+            console.log("Guardar datos del usuario...");
+
+            // Obtener los valores del formulario
+            const usuario = document.getElementById('usuarios').value;  // ID del usuario (Nuevo)
+            const codigoUsuario = document.getElementById('codigoUsuario').value;  // Código de usuario
+            const correoUsuario = document.getElementById('usuarioFirestore').value;  // Correo del usuario registrado
+            const telefono = document.getElementById('telefono').value;
+            const fechaInicio = document.getElementById('fecha').value;
+            const modalidad = document.getElementById('modalidad').value;
+            const area = document.getElementById('area').value;
+            const puesto = document.getElementById('puesto').value;
+            const cargo = document.getElementById('cargo').value;
+            const turno = document.getElementById('turno').value;
+
+            // Verificar que el correo de usuario esté seleccionado
+            if (!correoUsuario) {
+                alert("Por favor, seleccione un usuario registrado.");
+                return;
+            }
+
+            // Crear el objeto de detalles de usuario
+            const usuarioDetalles = {
+                codigoUsuario,
+                telefono,
+                fechaInicio,
+                modalidad,
+                area,
+                puesto,
+                cargo,
+                turno,
+            };
+
+            // Guardar los detalles en Firestore bajo la colección "detallesusuario"
+            try {
+                // Usar el correo como ID del documento
+                await setDoc(doc(db, 'detallesusuario', correoUsuario), usuarioDetalles);
+                console.log("Datos guardados correctamente");
+
+                // Actualizar los combobox para evitar mostrar este usuario
+                await cargarUsuariosDesdeAPI();
+                await cargarUsuariosRegistrados();
+
+                // Limpiar los campos del formulario
+                document.getElementById('usuarios').value = '';
+                document.getElementById('codigoUsuario').value = '';
+                document.getElementById('usuarioFirestore').value = '';
+                document.getElementById('telefono').value = '';
+                document.getElementById('fecha').value = '';
+                document.getElementById('modalidad').value = '';
+                document.getElementById('area').value = '';
+                document.getElementById('puesto').value = '';
+                document.getElementById('cargo').value = '';
+                document.getElementById('turno').value = '';
+
+                alert("Detalles del usuario guardados correctamente.");
+            } catch (error) {
+                console.error("Error al guardar los detalles del usuario:", error);
+                alert("Hubo un error al guardar los detalles.");
+            }
+        });
+
+        // Ejecutar funciones una vez esté todo cargado
+        cargarUsuariosDesdeAPI();
+        cargarUsuariosRegistrados();
+        cargarModalidades();
+        cargarAreas();
+        cargarPuestos();
+        cargarCargos();
+        cargarTurnos();
+
+
+        // Función para cargar los usuarios con detalles en la tabla
+async function cargarUsuariosConDetalles() {
+    const tableBody = document.querySelector('.styled-table tbody');
+    tableBody.innerHTML = ''; // Limpiar tabla antes de agregar nuevos datos
+
+    try {
+        const snapshot = await getDocs(collection(db, 'detallesusuario'));
+        
+        snapshot.forEach(doc => {
+            const datosUsuario = doc.data();
+            const correo = doc.id; // El correo es el ID del documento
+            const row = document.createElement('tr');
+
+            // Crear una fila con los detalles del usuario
+            row.innerHTML = `
+                <td><input type="checkbox" data-correo="${correo}" class="select-usuario"></td>
+                <td>${correo}</td>
+                <td>${datosUsuario.fechaInicio}</td>
+                <td>${datosUsuario.telefono}</td>
+                <td>${datosUsuario.modalidad}</td>
+                <td>${datosUsuario.area}</td>
+                <td>${datosUsuario.cargo}</td>
+                <td>${datosUsuario.puesto}</td>
+                <td>${datosUsuario.turno}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (err) {
+        console.error('Error al cargar los detalles de los usuarios:', err);
+    }
+}
+
+document.querySelector('.styled-table').addEventListener('change', async function (event) {
+    if (event.target.classList.contains('select-usuario')) {
+        const correo = event.target.getAttribute('data-correo');
+
+        // Obtener los detalles del usuario seleccionado desde Firestore
+        const docRef = doc(db, 'detallesusuario', correo);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const datosUsuario = docSnap.data();
+
+            // Rellenar el formulario con los datos del usuario
+            document.getElementById('usuarioFirestore').value = correo;
+            document.getElementById('telefono').value = datosUsuario.telefono;
+            document.getElementById('modalidad').value = datosUsuario.modalidad;
+            document.getElementById('area').value = datosUsuario.area;
+            document.getElementById('puesto').value = datosUsuario.puesto;
+            document.getElementById('cargo').value = datosUsuario.cargo;
+            document.getElementById('turno').value = datosUsuario.turno;
+            document.getElementById('codigoUsuario').value = datosUsuario.codigoUsuario; // <-- Aquí estaba faltando
+        } else {
+            console.log("No se encontraron detalles para este usuario.");
+        }
+    }
+});
+
+document.getElementById('editButton')?.addEventListener('click', async function (event) {
+    event.preventDefault();
+    console.log("Modificar datos del usuario...");
+
+    // Obtener los valores del formulario
+    const correoUsuario = document.getElementById('usuarioFirestore').value;  // Correo del usuario registrado
+    const telefono = document.getElementById('telefono').value;
+    const modalidad = document.getElementById('modalidad').value;
+    const area = document.getElementById('area').value;
+    const puesto = document.getElementById('puesto').value;
+    const cargo = document.getElementById('cargo').value;
+    const turno = document.getElementById('turno').value;
+
+    // Verificar que el correo de usuario esté seleccionado
+    if (!correoUsuario) {
+        alert("Por favor, seleccione un usuario registrado.");
+        return;
+    }
+
+    // Crear el objeto de detalles de usuario
+    const usuarioDetalles = {
+        telefono,
+        modalidad,
+        area,
+        puesto,
+        cargo,
+        turno,
+    };
+
+    // Actualizar los detalles en Firestore bajo la colección "detallesusuario"
+    try {
+        // Usar el correo como ID del documento
+        await setDoc(doc(db, 'detallesusuario', correoUsuario), usuarioDetalles, { merge: true });
+        console.log("Datos modificados correctamente");
+
+        // Actualizar los combobox para evitar mostrar este usuario
+        await cargarUsuariosDesdeAPI();
+        await cargarUsuariosRegistrados();
+        await cargarUsuariosConDetalles();
+
+        alert("Detalles del usuario modificados correctamente.");
+    } catch (error) {
+        console.error("Error al modificar los detalles del usuario:", error);
+        alert("Hubo un error al modificar los detalles.");
+    }
+});
+
+window.addEventListener('DOMContentLoaded', (event) => {
+    cargarUsuariosConDetalles(); // Cargar los usuarios con detalles al iniciar la página
+});
+
+
+
+
+    // Redirigir a login.html al hacer clic en "Cerrar sesión"
+    logout.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/login/login.html";
+    });
+
+            </script>
+
+    </body>
+    </html>

@@ -1,0 +1,308 @@
+/* Estilos específicos para la vista de monitoreo */
+
+/* Estilo para el encabezado */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+}
+
+/* Menú lateral */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #444;
+    padding-top: 20px;
+    padding-left: 20px;
+}
+
+.sidebar a {
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.sidebar a:hover {
+    background-color: #575757;
+}
+
+/* Contenido principal */
+.main-content {
+    display: block;
+    padding: 20px;
+}
+
+/* Estilos para pantallas pequeñas */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+}
+
+/* Estilos para la sección de monitoreo */
+.attendance-section {
+    margin: 0 auto;
+    padding: 20px;
+    max-width: 1200px;
+}
+
+/* Estilos de la tabla */
+table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f2f2f2;
+}
+
+table td .present {
+    color: green;
+}
+
+table td .absent {
+    color: red;
+}
+
+/* Efecto hover en las filas de la tabla */
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Botones de acción */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Estilo de foco para accesibilidad */
+button:focus {
+    outline: 2px solid #ff9800;
+    outline-offset: 2px;
+}
+
+/* Modal principal */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #2A2A44(0, 0, 0, 0.4); /* Fondo oscuro */
+    overflow: auto; /* Permite el desplazamiento si el contenido es muy grande */
+    padding-top: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Contenido del Modal */
+.modal-content {
+    background-color: #f8f9fa;
+    margin: auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 800px;
+    max-width: 500px;  /* Ampliamos el modal */
+    color: #2A2A44;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espacio entre las secciones */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Título del Modal */
+.modal-title {
+    text-align: center;
+    color: #007bff;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+/* Cerrar el Modal */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Cambiar el color cuando el ratón pasa por encima */
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Contenedor de los detalles */
+.modal-details {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Estilo para cada sección (Entrada/Salida/Datos del Colaborador) */
+.modal-section {
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espacio entre los elementos dentro de cada sección */
+}
+
+/* Títulos de cada sección */
+.modal-section h3 {
+    color: #007bff;
+    font-size: 20px;
+}
+
+/* Estilo de las filas de la tabla */
+table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f2f2f2;
+}
+
+table td .present {
+    color: green;
+}
+
+table td .absent {
+    color: red;
+}
+
+/* Efecto hover en las filas de la tabla */
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Botones de acción */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Estilo de foco para accesibilidad */
+button:focus {
+    outline: 2px solid #ff9800;
+    outline-offset: 2px;
+}
+
+/* Modal de visualización de entrada */
+.btn-ver {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-ver:hover {
+    background-color: #0056b3;
+}
+
+/* Botón de historial */
+.modal-footer {
+    text-align: right;
+}
+
+.btn-historial {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-historial:hover {
+    background-color: #218838;
+}
+
+/* Datos del colaborador */
+.datos-colaborador {
+    border-left: 2px solid #ccc;
+    padding-left: 20px;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+    /* Reducir el tamaño del modal */
+    .modal-content {
+        width: 95%;
+        max-width: 100%;
+    }
+    /* Mejorar la disposición de las secciones */
+    .modal-details {
+        flex-direction: column;
+    }
+}
+
+.text-success {
+    color: green !important;
+    font-weight: bold !important;
+}
+
+.text-danger {
+    color: red !important;
+    font-weight: bold !important;
+}

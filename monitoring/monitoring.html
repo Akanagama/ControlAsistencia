@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoreo de Asistencia</title>
+    <!-- Estilo de Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* Encabezado */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #151527;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-toggle {
+            cursor: pointer;
+        }
+
+        .menu-toggle .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 4px 0;
+            background-color: #ffffff;
+        }
+
+        .view-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-icon {
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .user-text {
+            font-size: 16px;
+        }
+
+        /* Menú lateral */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #2A2A44;
+            transition: left 0.3s;
+            padding-top: 60px;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        /* Contenedor principal */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        /* Estilos generales */
+        .main-content {
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        /* Sección de monitoreo de asistencia */
+        .attendance-section {
+            width: 100%;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Tabla de asistencia */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #151527;
+        }
+
+        .present {
+            color: green;
+        }
+
+        .absent {
+            color: red;
+        }
+
+        /* Estilo de los botones */
+        .actions button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #444444;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .actions button:hover {
+            background-color: #555;
+        }
+
+        /* Búsqueda */
+        .search-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            padding: 10px;
+            width: 250px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .search-container button {
+            padding: 10px;
+            background-color: #444444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* Estilo para la nueva columna de casillas */
+        table th:first-child {
+            text-align: center;
+            width: 50px; /* Ajusta el ancho de la columna de las casillas */
+        }
+
+        table td:first-child {
+            text-align: center;
+        }
+
+        table th, table td {
+            text-align: center;
+            white-space: nowrap; /* Evitar saltos de línea en las columnas */
+        }
+
+        /* Estilos del modal */
+        #modalAsistencia {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 800px;
+            max-width: 90vw;
+            max-height: 90vh;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto; /* Para evitar que el modal sea demasiado grande */
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .modal-header h2 {
+            flex-grow: 1; /* Permite que el título ocupe espacio disponible */
+            text-align: center;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        /* Asegura que la fecha y el botón de cierre no afecten la alineación */
+        .modal-header span {
+            position: absolute;
+            right: 15px;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #aaa;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #2A2A44;
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column; /* Asegura que los elementos estén en columna */
+            gap: 20px;
+        }
+
+        /* Estilos para Entrada y Salida en fila */
+        .row {
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .col {
+            flex: 1;
+            background-color: #2A2A44;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        /* Sección de Datos del Colaborador */
+        .datos-colaborador {
+            background-color: #2A2A44;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .col-left, .col-right {
+            flex: 1;
+            background-color: #2A2A44;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .col-left h3, .col-right h3 {
+            margin-top: 0;
+        }
+
+        #btnHistorial {
+            background-color: #004085;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 15px auto 0 auto;
+            transition: background-color 0.3s ease;
+        }
+
+        #btnHistorial:hover {
+            background-color: #002752;
+        }
+
+        .text-success {
+        color: green; /* Color para "PRESENTE" */
+        }
+
+        .text-danger {
+            color: red; /* Color para "AUSENTE" o "PENDIENTE" */
+        }
+
+        /*Cerrar sesión*/
+        /* Estilos para el contenedor del usuario */
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* Estilos del menú desplegable */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            width: 150px;
+            z-index: 1000;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Mostrar el menú cuando tiene la clase 'active' */
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        /* Estilos para la pantalla de carga */
+.loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(229, 231, 233, 0.8);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        @keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+    </style>
+</head>
+<body>
+        <!-- Pantalla de carga -->
+        <div class="loading-screen" id="loadingScreen">
+            <div class="spinner"></div>
+            <div class="loading-text">...</div>
+        </div> 
+        <!-- Encabezado superior -->
+        <header class="header">
+            <div class="menu-toggle" id="menu-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+            <h1 class="view-title">Monitoreo de Asistencia</h1>
+            <div class="user-info" id="userIcon">
+                <i class="fa fa-user user-icon"></i> <!-- Icono de usuario con la clase correcta -->
+                <span id="usernameDisplay" class="user-text">User</span>
+                <div class="dropdown-menu" id="userMenu">
+                    <a href="#" id="logout">Cerrar sesión</a>
+                </div>
+            </div> <!-- Cierre del div.user-info -->
+        </header>
+
+        <!-- Menú lateral desplegable -->
+        <div class="sidebar" id="sidebar">
+            <a href="../dashboard/dashboard.html">Dashboard</a>
+            <a href="../monitoring/monitoring.html">Monitoreo de Asistencia</a>
+            <a href="../personal/personal.html">Personal</a>
+            <a href="../horarios/horarios.html">Gestión de Horarios</a>
+            <a href="../public/config.html">Configuración</a>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="main-content">
+            <!-- Sección de monitoreo -->
+            <div class="attendance-section">
+                <h2>Monitoreo de Asistencia</h2>
+
+                <!-- Búsqueda de empleado -->
+                <div class="search-container">
+                    <input type="text" id="employee-search" placeholder="Buscar empleado">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+
+                <!-- Tabla de asistencia -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th> <!-- Nueva columna para las casillas -->
+                            <th style="width: 100px;">Cod. Colaborador</th> <!-- Reducir ancho -->
+                            <th>Colaborador</th>
+                            <th>Fecha</th>
+                            <th>Asistencia</th>
+                            <th>Turno</th>
+                            <th style="width: 120px;">Hora de Entrada</th> <!-- Reducir ancho -->
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-monitoreo-body">
+                        <tr>
+                            <td><input type="checkbox" class="checkbox-colaborador"></td> <!-- Casilla -->
+                            <td>JRTG</td>
+                            <td>JUAN TORRES GARCIA</td>
+                            <td>11/01/25</td>
+                            <td><span class="present">PRESENTE</span></td>
+                            <td>MAÑANA</td>
+                            <td>8:00 AM</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkbox-colaborador"></td> <!-- Casilla -->
+                            <td>MARL</td>
+                            <td>MARÍA LOPEZ</td>
+                            <td>11/01/25</td>
+                            <td><span class="absent">AUSENTE</span></td>
+                            <td>TARDE</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Botones de acción -->
+                <div class="actions">
+                    <button id="view-attendance">Visualizar Asistencia</button>
+                    <button id="generate-report">Generar Reporte</button>
+                </div>
+            </div>
+        </div>
+
+    <!-- Modal para Visualizar Asistencia -->
+    <div id="modalAsistencia" class="modal">
+        <div class="modal-content">
+            <!-- Encabezado del Modal -->
+            <div class="modal-header">
+                <h2>Asistencia</h2>
+                <span class="modal-close" id="closeModal">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <!-- Sección superior: Entrada y Salida -->
+                <div class="row">
+                    <div class="col entrada">
+                        <h3>Entrada</h3>
+                        <p><strong>Hora de Entrada:</strong> <span id="horaEntrada">08:00</span></p>
+                        <p><strong>Estado:</strong> <span id="estadoEntrada">A Tiempo</span></p>
+                    </div>
+                    <div class="col salida">
+                        <h3>Salida</h3>
+                        <p><strong>Hora de Salida:</strong> <span id="horaSalida">-</span></p>
+                        <p><strong>Estado:</strong> <span id="estadoSalida">-</span></p>
+                    </div>
+                </div>
+            
+                <!-- Sección inferior: Datos del Colaborador -->
+                <div class="datos-colaborador">
+                    <h3>Datos del Colaborador</h3>
+                    <p><strong>Nombre:</strong> <span id="nombreColaborador">Juan Torres García</span></p>
+                    <p><strong>Usuario:</strong> <span id="usuarioColaborador">JRTG</span></p>
+                    <p><strong>Turno:</strong> <span id="turnoColaborador">Mañana (08:00 - 13:00)</span></p>
+                    <p><strong>Estado:</strong> <span id="estatusColaborador">Activo</span></p>
+                </div>
+            </div>
+
+            <!-- Botón para Ir a Historial -->
+            <button id="btnHistorial" onclick="window.location.href='/historial'">
+                Ir a Historial de Asistencia
+            </button>
+        </div>
+    </div>
+</body>
+<!-- Scripts -->
+<script>
+
+    const loadingScreen = document.getElementById('loadingScreen');
+
+    // Mostrar/ocultar pantalla de carga
+    function showLoading() {
+            loadingScreen.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+        loadingScreen.classList.add('hidden');
+    }
+
+        // Funcionalidad de búsqueda dinámica
+        document.getElementById('employee-search').addEventListener('input', () => {
+            const searchQuery = document.getElementById('employee-search').value.trim().toLowerCase(); // Obtener el texto de búsqueda
+            const rows = document.querySelectorAll('#tabla-monitoreo-body tr'); // Seleccionar todas las filas de la tabla
+
+            rows.forEach(row => {
+                let rowContainsSearchQuery = false; // Inicializar variable
+
+                // Recorrer todas las celdas de la fila
+                row.querySelectorAll('td').forEach(cell => {
+                    if (cell.textContent.toLowerCase().includes(searchQuery)) {
+                        rowContainsSearchQuery = true; // Marcar fila si hay coincidencia
+                }
+            });
+
+                // Mostrar u ocultar la fila
+                if (rowContainsSearchQuery || searchQuery === '') {
+                    row.style.display = ''; // Mostrar fila
+                } else {
+                    row.style.display = 'none'; // Ocultar fila
+                }
+            });
+            });
+
+        // Mostrar el modal con los detalles del colaborador seleccionado
+        document.getElementById('view-attendance').addEventListener('click', () => {
+            const selectedCheckboxes = document.querySelectorAll('.checkbox-colaborador:checked');
+            if (selectedCheckboxes.length === 1) {
+                const selectedCollaborator = selectedCheckboxes[0];
+                const row = selectedCollaborator.closest('tr');
+
+                // Verificar el tipo de usuario
+                //const userType = localStorage.getItem("userType");
+                //if (userType !== 'adminitrador') {
+                //    alert("No tienes permiso para acceder a esta información.");
+                //    return; // No abrir el modal
+                //}
+
+                // Obtener los datos del colaborador
+                const codColaborador = selectedCollaborator.closest('tr').children[1].textContent.trim();
+                const nombre = selectedCollaborator.closest('tr').children[2].textContent.trim();
+                const horaEntrada = row.children[6].textContent.trim();
+                const estadoEntrada = row.children[4].textContent.trim();
+                const horaSalida = selectedCollaborator.dataset.horaSalida || '-';
+                const sobretiempo = selectedCollaborator.dataset.sobretiempo || "";
+                let estadoSalida;
+                if (!horaSalida || horaSalida === '-') {
+                    estadoSalida = "Sin salida registrada";
+                } else {
+                    estadoSalida = sobretiempo && parseFloat(sobretiempo) > 0
+                        ? "Con Sobretiempo"
+                        : "Conforme";
+                }
+
+                // Actualizar el contenido del modal
+                document.getElementById('horaEntrada').textContent = horaEntrada;
+                document.getElementById('estadoEntrada').textContent = estadoEntrada;
+                document.getElementById('horaSalida').textContent = horaSalida;
+                document.getElementById('estadoSalida').textContent = estadoSalida;
+
+                // Mostrar el modal
+                document.getElementById('modalAsistencia').style.display = 'flex';
+            } else {
+                alert("Por favor, selecciona un solo colaborador.");
+            }
+        });
+
+        // Cerrar el modal
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('modalAsistencia').style.display = 'none';
+        });
+
+        // Cerrar el modal si se hace clic fuera de él
+        window.addEventListener('click', (event) => {
+            if (event.target === document.getElementById('modalAsistencia')) {
+                document.getElementById('modalAsistencia').style.display = 'none';
+            }
+        });
+
+function renderizarColaboradores(colaboradores) {
+    const tablaBody = document.querySelector('#tabla-monitoreo-body');
+    tablaBody.innerHTML = ''; // Limpiar contenido previo
+
+    colaboradores.forEach(colaborador => {
+        const fila = document.createElement('tr');
+        fila.classList.add('colaborador-row'); // Para la funcionalidad de clic en la fila
+
+        // Formatear la hora de entrada
+        let horaEntrada = '-';
+        if (colaborador.horaEntrada) {
+            // Extraer solo la parte de la hora que necesitas (HH:mm)
+            horaEntrada = colaborador.horaEntrada.substring(0, 5); // Obtiene HH:mm
+        }
+
+        // Reemplazar valores NULL o vacíos por "PENDIENTE"
+        const asistencia = colaborador.asistencia || "PENDIENTE"; // Cambiar NULL por 'PENDIENTE'
+        const turno = colaborador.turno || "PENDIENTE"; // Cambiar NULL por 'PENDIENTE'
+
+        fila.innerHTML = `
+            <td><input type="checkbox" class="checkbox-colaborador"></td>  <!-- ✅ Checkbox agregado -->
+            <td>${colaborador.cod_colaborador}</td>
+            <td>${colaborador.colaborador}</td>
+            <td>${new Date().toLocaleDateString()}</td>  <!-- Fecha actual -->
+            <td>
+                <span class="${colaborador.asistencia && colaborador.asistencia.toLowerCase() === 'presente' ? 'text-success' : 'text-danger'}">
+                    ${colaborador.asistencia && colaborador.asistencia.toLowerCase() !== "null" ? colaborador.asistencia : "Pendiente"}
+                </span>
+            </td>
+            <!-- Asistencia -->
+            <td>${obtenerNombreTurno(colaborador.turno_id)}</td>
+            <td>${horaEntrada}</td>  <!-- Hora de Entrada -->
+        `;
+
+        // Agregar funcionalidad al hacer clic en la fila
+        fila.addEventListener("click", () => {
+            abrirModalAsistencia({
+                nombre: colaborador.colaborador,
+                usuario: colaborador.cod_colaborador,
+                turno: colaborador.turno || 'Pendiente',
+                estatus: colaborador.asistencia,
+                horaEntrada: horaEntrada,
+                estadoEntrada: colaborador.asistencia === 'PRESENTE' ? 'A Tiempo' : 'Tarde',
+                horaSalida: "Pendiente", // Ajustar según la lógica deseada
+                estadoSalida: "Pendiente" // Ajustar según la lógica deseada
+            });
+        });
+
+        tablaBody.appendChild(fila);
+    });
+}
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const username = localStorage.getItem("username"); // Recuperar el usuario
+            if (username) {
+                const displayName = username.split('@')[0]; // Obtener solo la parte antes del '@'
+                document.getElementById("usernameDisplay").textContent = displayName;
+            }
+        });
+
+        // Funcionalidad para generar reporte en PDF
+        document.getElementById('generate-report').addEventListener('click', () => {
+        const { jsPDF } = window.jspdf; 
+        const doc = new jsPDF();
+
+        // Definir encabezados
+        const headers = [["Cod. Colaborador", "Nombre", "Fecha", "Asistencia", "Turno", "Hora de Entrada"]];
+        const rows = [];
+
+        document.querySelectorAll('#tabla-monitoreo-body tr').forEach(row => {
+            if (row.style.display !== 'none') {
+                const rowData = [
+                    row.children[1].textContent.trim(),
+                    row.children[2].textContent.trim(),
+                    row.children[3].textContent.trim(),
+                    row.children[4].textContent.trim(),
+                    row.children[5].textContent.trim(),
+                    row.children[6].textContent.trim(),
+                ];
+                rows.push(rowData);
+            }
+        });
+
+        // Título del reporte
+        doc.setFontSize(18);
+        doc.text("Reporte de Asistencia", 14, 15);
+
+        // Generar la tabla
+        doc.autoTable({
+            startY: 25,
+            head: headers,
+            body: rows,
+            theme: 'grid', // Aplica bordes
+            styles: { fontSize: 10 },
+            headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' }, // Estilo para encabezados
+            alternateRowStyles: { fillColor: [240, 240, 240] }, // Filas alternas con fondo gris
+        });
+
+        // Guardar el PDF
+        doc.save("reporte_asistencia.pdf");
+    });
+
+
+        document.getElementById('view-attendance').addEventListener('click', () => {
+    const selectedCheckboxes = document.querySelectorAll('.checkbox-colaborador:checked');
+
+    if (selectedCheckboxes.length !== 1) {
+        alert("Por favor, selecciona un solo colaborador.");
+        return;
+    }
+
+    const selectedCollaborator = selectedCheckboxes[0];
+    const row = selectedCollaborator.closest('tr');
+
+    // Obtener los datos del colaborador desde la fila de la tabla
+    const codColaborador = row.children[1].textContent.trim();
+    const nombre = row.children[2].textContent.trim();
+    const horaEntrada = row.children[6].textContent.trim(); // Corregido para tomar de la columna correcta
+    const estadoEntrada = row.children[4].textContent.trim(); // Tomar el estado de asistencia (Presente/Ausente)
+
+    // Actualizar los datos en el modal
+    document.getElementById('nombreColaborador').textContent = nombre;
+    document.getElementById('usuarioColaborador').textContent = codColaborador;
+    document.getElementById('horaEntrada').textContent = horaEntrada;
+    document.getElementById('estadoEntrada').textContent = estadoEntrada;
+
+    // Mostrar el modal
+    document.getElementById('modalAsistencia').style.display = 'flex';
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const userIcon = document.getElementById("userIcon");
+    const userMenu = document.getElementById("userMenu");
+    const logoutBtn = document.getElementById("logout");
+
+    // Alternar el menú al hacer clic en el usuario
+    userIcon.addEventListener("click", function(event) {
+        userMenu.classList.toggle("active");
+        event.stopPropagation(); // Evita que el clic se propague
+    });
+
+    // Cerrar el menú si se hace clic fuera de él
+    document.addEventListener("click", function(event) {
+        if (!userIcon.contains(event.target)) {
+            userMenu.classList.remove("active");
+        }
+    });
+
+    // Redirigir a login.html al hacer clic en "Cerrar sesión"
+    logoutBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/login/login.html";
+    });
+});
+
+const urlPersonal = "https://script.google.com/macros/s/AKfycbz26keIkxQpR-6bLVWGf-X_tTgqhCwsLXS4JexMjpcPrB7aq9WPiwq5c7Nr-bf46D5J/exec?tipo=personal";
+const urlAsistencia = "https://script.google.com/macros/s/AKfycbz26keIkxQpR-6bLVWGf-X_tTgqhCwsLXS4JexMjpcPrB7aq9WPiwq5c7Nr-bf46D5J/exec?tipo=asistencia";
+
+async function obtenerColaboradores() {
+    showLoading();
+    try {
+        const [resPersonal, resAsistencia] = await Promise.all([
+            fetch(urlPersonal).then(res => res.json()),
+            fetch(urlAsistencia).then(res => res.json())
+        ]);
+
+        const hoy = new Date().toISOString().split("T")[0];
+        const tbody = document.getElementById("tabla-monitoreo-body");
+        tbody.innerHTML = "";
+
+        const colaboradoresValidos = resPersonal.filter(colaborador =>
+            colaborador.id_empleado !== "id_empleado" && colaborador.id_empleado !== undefined && colaborador.nombre
+        );
+
+        colaboradoresValidos.forEach(colaborador => {
+            const asistencia = resAsistencia.find(a =>
+                a.id_empleado === colaborador.id_empleado && a.fecha_hora.includes(hoy)
+            );
+
+            const horaSalida = asistencia && asistencia.salida
+            ? new Date(asistencia.salida).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            : "-";
+
+            const estadoAsistencia = asistencia && asistencia.entrada
+                ? `<span class="present">Presente</span>`
+                : `<span class="absent">Pendiente</span>`;
+            const horaEntrada = asistencia
+                ? new Date(asistencia.entrada).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                : "-";
+
+                const fila = `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="checkbox-colaborador"
+                                data-hora-entrada="${horaEntrada}"
+                                data-hora-salida="${horaSalida}"
+                                data-sobretiempo="${asistencia?.sobretiempo || ''}">
+                        </td>
+                        <td>${colaborador.id_empleado}</td>
+                        <td>${colaborador.nombre}</td>
+                        <td>${hoy}</td>
+                        <td>${estadoAsistencia}</td>
+                        <td>No especificado</td>
+                        <td>${horaEntrada}</td>
+                    </tr>
+                `;
+            tbody.innerHTML += fila;
+        });
+
+        // ✅ Llamamos aquí, después de llenar la tabla
+        inicializarCheckboxes();
+
+    } catch (error) {
+        console.error("Error al obtener los datos:", error);
+    } finally {
+            hideLoading(); // Oculta el cargando siempre, éxito o error
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    obtenerColaboradores();
+});
+
+    </script>
+        <script src="/assets/js/monitoring.js"></script>
+    </body>
+</html>

@@ -1,0 +1,331 @@
+/* Estilo general */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+  }
+  
+  /* Header (Encabezado) */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #444444; /* Fondo gris oscuro */
+    color: #ffffff; /* Texto blanco */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  header h1 {
+    margin: 0;
+  }
+  
+  .menu-hamburguesa button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  
+  .menu-hamburguesa ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: none;
+  }
+  
+  .menu-hamburguesa ul li {
+    margin: 0.5rem 0;
+  }
+  
+  .menu-hamburguesa ul li a {
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  .menu-hamburguesa ul.hidden {
+    display: none;
+  }
+  
+  /* Contenedor superior */
+.contenedor-superior {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #e9ecef; /* Consistente con tu estilo existente */
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 1rem auto; /* Para mantener uniformidad con los márgenes existentes */
+  max-width: 100%; /* Permite que las tablas se expandan según el contenido */
+  width: 90%; /* Ajusta según sea necesario */
+}
+
+.formulario-datos,
+.configuracion-horarios {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.configuracion-horarios button {
+  margin-top: 10px;
+  background-color: #007bff; /* Consistente con botones en tu CSS */
+  color: #fff;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.configuracion-horarios button:hover {
+  background-color: #0056b3; /* Hover consistente */
+}
+
+/* Contenedor inferior */
+.contenedor-inferior {
+  /*display: flex;
+  gap: 20px;
+  margin: 1rem auto;
+  max-width: 90%;
+  justify-content: space-between;
+  align-items: flex-start; /* Asegura que ambas tablas inicien alineadas arriba */
+
+    flex-grow: 1;
+    width: 100%;
+    max-width: none;
+    justify-content: center;
+
+}
+
+/* Tabla de horarios */
+.tabla-horarios {
+  flex: 1;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Manteniendo la sombra existente */
+  padding: 20px;
+  width: 100%;
+}
+
+.tabla-horarios table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-horarios, .lista-eventos {
+  flex: 1; /* Hace que ambas ocupen el mismo ancho */
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 100%;
+  min-width: 600px; /* Evita que la tabla de eventos se haga demasiado angosta */
+}
+
+/* Lista de eventos */
+.lista-eventos {
+  /*flex: 1;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  min-width: 400px;*/
+  flex: 1;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  min-width: auto; /* Permite que se ajuste dinámicamente */
+  max-width: 50%;  /* Opcional: Limita su crecimiento si es necesario */
+
+}
+
+.lista-eventos h2 {
+  margin-bottom: 1rem;
+}
+
+.lista-eventos ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lista-eventos ul li {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+
+/* Asegura que el dropdown se vea de manera apropiada */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  color: #333; /* Puedes cambiarlo al color que prefieras */
+  font-size: 16px; /* Ajusta el tamaño de la fuente si lo deseas */
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content label {
+  padding: 8px;
+  display: block;
+  cursor: pointer;
+}
+
+.dropdown-content label:hover {
+  background-color: #ddd;
+}
+
+.flatpickr-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.flatpickr-calendar {
+  z-index: 9999 !important; /* Asegura que el selector de hora se muestre encima de otros elementos */
+}
+
+.flatpickr-time {
+  display: flex;
+  justify-content: center;
+}
+
+.flatpickr-time input {
+  font-size: 16px;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.evento-asignado {
+  background-color: lightblue;
+  color: black;
+  text-align: center;
+  font-weight: bold;
+}
+
+button {
+  cursor: pointer; /* Hace que el cursor se vea como una mano al pasar por encima */
+}
+
+button:hover {
+  background-color: #f0f0f0; /* Cambia el color del botón */
+  cursor: pointer; /* Hace que el cursor cambie a una mano */
+}
+
+/* Contenedor de los cuadros superiores */
+.contenedor-superior {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+  background-color: #151527; /* Mantiene el esquema oscuro */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  flex-wrap: wrap;
+}
+
+/* Estilo de cada cuadro */
+.contenedor-superior > div {
+  flex: 1;
+  min-width: 350px;
+  max-width: 500px;
+  background-color: #2A2A44;
+  padding: 20px;
+  border-radius: 10px;
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Títulos */
+.contenedor-superior h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 5px;
+}
+
+/* Labels */
+.contenedor-superior label {
+  font-weight: bold;
+  display: block;
+  margin-top: 10px;
+}
+
+/* Inputs y Selects */
+.contenedor-superior input,
+.contenedor-superior select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: none;
+  font-size: 14px;
+  background-color: #1d1d35;
+  color: #ffffff;
+  outline: none;
+}
+
+.contenedor-superior select {
+  cursor: pointer;
+}
+
+/* Botones */
+button {
+  width: 100%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+  background-color: #218838;
+}
+
+/* Botón secundario */
+button.secundario {
+  background-color: #343a40;
+}
+
+button.secundario:hover {
+  background-color: #212529;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .contenedor-superior {
+      flex-direction: column;
+      align-items: center;
+  }
+}

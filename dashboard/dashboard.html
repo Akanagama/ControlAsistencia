@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+/* Encabezado */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #151527;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.menu-toggle {
+    cursor: pointer;
+}
+
+.menu-toggle .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 4px 0;
+    background-color: #ffffff;
+}
+
+.view-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Contenedor principal */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    margin: auto;
+    gap: 20px;
+}
+
+/* Contenedor de métricas superior */
+.metrics-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-top: -35px; /* Ajustar la separación */
+    width: 90%;
+    max-width: 1000px;
+}
+
+/* Cuadros de métricas */
+.metric-box {
+    background-color: #ffffff;
+    padding: 5px;
+    min-width: 250px; /* Ajusta según necesidad */
+    height: 100px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-section {
+    display: flex;
+    flex-direction: column; /* Para mejor alineación */
+    align-items: center;
+    width: 100%;
+    margin-top: -5px;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    text-align: center;
+    width: 85%;
+    max-width: 850px;
+    position: relative; /* Asegura que el gráfico respete su espacio */
+}
+
+
+.chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    height: 400px;
+}
+
+
+/* Menú lateral */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background-color: #2A2A44;
+    transition: left 0.3s;
+    padding-top: 60px;
+    z-index: 1000;
+}
+
+.sidebar a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+/* General */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+}
+
+/* Estilo para el icono y el texto de usuario */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.user-icon {
+    font-size: 24px;
+    color: #fff;
+}
+
+.user-text {
+    font-size: 16px;
+}
+
+/* Menú desplegable */
+.dropdown-menu {
+    position: absolute;
+    right: 10px;
+    top: 50px; /* Ajusta esto según la altura de tu navbar */
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    padding: 5px;
+    display: none; /* Para que solo aparezca cuando el usuario haga clic */
+    z-index: 1000; /* Asegura que esté por encima del footer */
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f0f0f0;
+}
+
+.dropdown-menu.active {
+    display: block;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden; /* Evita el scroll horizontal */
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto; /* Permite scroll solo de arriba a abajo */
+    overflow-x: hidden; /* Evita el scroll lateral */
+    padding-bottom: 50px; /* Para evitar que el contenido quede debajo del footer */
+}
+
+footer {
+    background-color: #151527;
+    color: white;
+    text-align: center; /* Centrar horizontalmente el texto */
+    padding: 5px;
+    width: 100%;
+    height: 40px;
+    position: absolute;
+    bottom: 0;
+    
+    display: flex;
+    align-items: flex-start; /* Alinea el texto arriba */
+    justify-content: center; /* Centra el texto horizontalmente */
+}
+
+/* Estilo para el botón */
+button {
+    background-color: #151527; /* Fondo azul */
+    color: white; /* Texto blanco */
+    border: none;
+    padding: 5px 10px; /* Espaciado interno (padding) */
+    font-size: 1.0em;
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor cuando pasas sobre el botón */
+    transition: background-color 0.3s ease; /* Transición suave para el color de fondo */
+}
+
+/* Estilo del botón al pasar el mouse por encima */
+button:hover {
+    background-color: #0056b3; /* Cambia a un azul más oscuro */
+}
+
+/* Estilos para la pantalla de carga */
+.loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(229, 231, 233, 0.8);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        @keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+</style>
+</head>
+<body>
+    <!-- Pantalla de carga -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+        <div class="loading-text">...</div>
+    </div> 
+    <!-- Encabezado superior -->
+    <header class="header">
+        <div class="menu-toggle" id="menu-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+        <h1 class="view-title">Dashboard</h1>
+        <div class="user-info" id="userIcon">
+            <i class="fa fa-user user-icon"></i> <!-- Icono de usuario con la clase correcta -->
+            <span id="usernameDisplay" class="user-text">User</span>
+            <div class="dropdown-menu" id="userMenu">
+                <a href="#" id="logout">Cerrar sesión</a>
+            </div>
+        </div> <!-- Cierre del div.user-info -->
+    </header>
+
+    <!-- Menú lateral desplegable -->
+    <div class="sidebar" id="sidebar">
+        <a href="../dashboard/dashboard.html">Dashboard</a>
+        <a href="../monitoring/monitoring.html">Monitoreo de Asistencia</a>
+        <a href="../personal/personal.html">Personal</a>
+        <a href="../horarios/horarios.html">Gestión de Horarios</a>
+        <a href="../public/config.html">Configuración</a>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="main-content" id="main-content">
+        <!-- Contenedor de métricas -->
+<div class="metrics-container">
+    <div class="metric-box">
+        <h3>Asistencia del Día</h3>
+        <p><span id="asistenciaDia">Cargando...</span></p>
+    </div>
+    <div class="metric-box">
+        <h3>Tardanzas del Día</h3>
+        <p><span id="tardanzaDia">Cargando...</span></p>
+    </div>
+    <div class="metric-box">
+        <h3>Registro de Asistencia</h3>
+        <button id="btnAsistencia">Ir a Registro</button>
+    </div>
+</div>
+
+
+<!-- Sección del gráfico -->
+<section class="dashboard-section">
+    <div class="chart-card">
+        <h2>Asistencia del Día</h2>
+        <div class="chart-container">
+            <canvas id="usuariosChart"></canvas>
+        </div>
+    </div>
+</section>
+
+
+    </div> <!-- Cierre correcto de main-content -->
+
+    <footer>
+        <p>&copy; 2025 Registro de Asistencia. Todos los derechos reservados.</p>
+    </footer>
+</body>
+
+    <!-- Scripts -->
+<script>
+
+const loadingScreen = document.getElementById('loadingScreen');
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+
+    // Mostrar/ocultar pantalla de carga
+    function showLoading() {
+        loadingScreen.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+        loadingScreen.classList.add('hidden');
+    }
+
+    // Alternar menú lateral
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+    });
+
+        sidebar.classList.remove('active');
+
+    // Cargar nombre de usuario desde localStorage
+    document.addEventListener("DOMContentLoaded", () => {
+        const username = localStorage.getItem("username");
+        if (!username) {
+            // Si no hay usuario logueado, redirigir al login
+            window.location.href = "/login/login.html";
+        } else {
+            // Mostrar el nombre de usuario
+            const displayName = username.split('@')[0];
+            document.getElementById("usernameDisplay").textContent = displayName;
+        }
+    });
+
+
+    // Obtener datos desde la API
+    async function obtenerDatosAsistencia() {
+        showLoading();
+        const url = "https://script.google.com/macros/s/AKfycbz26keIkxQpR-6bLVWGf-X_tTgqhCwsLXS4JexMjpcPrB7aq9WPiwq5c7Nr-bf46D5J/exec?tipo=asistencia";
+
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeout);
+
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error("❌ Error al obtener asistencia:", error);
+            return [];
+        }
+    }
+
+    async function contarUsuarios() {
+        const url = "https://script.google.com/macros/s/AKfycbz26keIkxQpR-6bLVWGf-X_tTgqhCwsLXS4JexMjpcPrB7aq9WPiwq5c7Nr-bf46D5J/exec?tipo=personal";
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            const datos = await response.json();
+
+            const usuariosValidos = datos.filter(u => u.id_empleado?.trim());
+            return usuariosValidos.length;
+        } catch (error) {
+            console.error("❌ Error al contar usuarios:", error);
+            return 0;
+        }
+    }
+
+
+    // Generar gráfico de usuarios
+    let miGrafico;
+
+    async function generarGrafico() {
+        const ctx = document.getElementById('usuariosChart').getContext('2d');
+        const totalUsuarios = await contarUsuarios();
+        const datosAsistencia = await obtenerDatosAsistencia();
+
+        // Fechas de los últimos 7 días
+        const fechas = Array.from({ length: 7 }, (_, i) => {
+            const fecha = new Date();
+            fecha.setDate(fecha.getDate() - (6 - i));
+            return fecha.toISOString().split('T')[0];
+        });
+
+        const conteo = Object.fromEntries(fechas.map(f => [f, { asistencia: 0, tardanzas: 0, faltas: totalUsuarios }]));
+
+        datosAsistencia.forEach(r => {
+            const fecha = new Date(r.entrada).toISOString().split('T')[0];
+            if (conteo[fecha]) {
+                conteo[fecha].asistencia++;
+                if (r.tardanza && !r.tardanza.includes("1899")) conteo[fecha].tardanzas++;
+                conteo[fecha].faltas = totalUsuarios - conteo[fecha].asistencia;
+            }
+        });
+
+        const asistencias = fechas.map(f => conteo[f].asistencia);
+        const tardanzas = fechas.map(f => conteo[f].tardanzas);
+        const faltas = fechas.map(f => conteo[f].faltas);
+
+        if (!miGrafico) {
+            miGrafico = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: fechas,
+                    datasets: [
+                        { label: "Asistencias", data: asistencias, borderColor: "green", backgroundColor: "rgba(0,255,0,0.2)", fill: true },
+                        { label: "Tardanzas", data: tardanzas, borderColor: "orange", backgroundColor: "rgba(255,165,0,0.2)", fill: true },
+                        { label: "Faltas", data: faltas, borderColor: "red", backgroundColor: "rgba(255,0,0,0.2)", fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: "Cantidad" }, max: totalUsuarios },
+                        x: { title: { display: true, text: "Fecha" } }
+                    }
+                }
+            });
+        } else {
+            miGrafico.data.labels = fechas;
+            miGrafico.data.datasets[0].data = asistencias;
+            miGrafico.data.datasets[1].data = tardanzas;
+            miGrafico.data.datasets[2].data = faltas;
+            miGrafico.options.scales.y.max = totalUsuarios;
+            miGrafico.update();
+        }
+    }
+
+    async function obtenerSoloAsistencias() {
+        const datos = await obtenerDatosAsistencia();
+        const hoy = new Date();
+
+        const asistencias = datos.filter(r => {
+            if (!r.entrada?.trim() || !r.fecha_hora) return false;
+
+            const fecha = new Date(r.fecha_hora);
+            return (
+                fecha.getDate() === hoy.getDate() &&
+                fecha.getMonth() === hoy.getMonth() &&
+                fecha.getFullYear() === hoy.getFullYear()
+            );
+        });
+
+    document.getElementById("asistenciaDia").textContent = `${asistencias.length}`;
+        }
+
+    async function obtenerSoloTardanzas() {
+        showLoading(); // Muestra el cargando
+
+        try {
+            const [datos, totalUsuarios] = await Promise.all([
+                obtenerDatosAsistencia(),
+                contarUsuarios()
+            ]);
+
+            const hoy = new Date();
+
+            const tardanzas = datos.filter(r => {
+                if (!r.tardanza?.trim() || !r.fecha_hora) return false;
+
+                const fecha = new Date(r.fecha_hora);
+                return (
+                    fecha.getDate() === hoy.getDate() &&
+                    fecha.getMonth() === hoy.getMonth() &&
+                    fecha.getFullYear() === hoy.getFullYear()
+                );
+            });
+
+            document.getElementById("tardanzaDia").textContent = `${tardanzas.length} / ${totalUsuarios}`;
+        } catch (error) {
+            console.error("❌ Error al obtener tardanzas:", error);
+            document.getElementById("tardanzaDia").textContent = "Error al cargar datos";
+        } finally {
+            hideLoading(); // Oculta el cargando siempre, éxito o error
+        }
+    }
+
+
+    // Cargar datos y ocultar loader cuando todo esté listo
+    document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
+        try {
+            await contarUsuarios();
+            await generarGrafico();
+            await obtenerSoloAsistencias();
+        } catch (e) {
+            console.error("⚠ Error al cargar datos:", e);
+        }
+        hideLoading();
+    });
+
+    // Menú de usuario y logout
+    document.addEventListener("DOMContentLoaded", () => {
+        const userIcon = document.getElementById("userIcon");
+        const userMenu = document.getElementById("userMenu");
+
+        userIcon.addEventListener("click", (e) => {
+            userMenu.classList.toggle("active");
+            e.stopPropagation();
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!userIcon.contains(e.target)) userMenu.classList.remove("active");
+        });
+
+        document.getElementById("logout").addEventListener("click", (e) => {
+            e.preventDefault();
+            window.location.href = "/login/login.html";
+        });
+    });
+
+    // Cerrar menú si se hace clic fuera del sidebar
+    document.addEventListener('click', (event) => {
+        if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+            sidebar.classList.remove('active');
+        }
+    });
+</script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+    
+    // Configuración de Firebase
+    const firebaseConfig = {
+    apiKey: "AIzaSyA6DLJMhI__pHccfQAKP-SG1JtDTh2MTU8",
+    authDomain: "controlasistencia-366c2.firebaseapp.com",
+    projectId: "controlasistencia-366c2",
+    storageBucket: "controlasistencia-366c2.firebasestorage.app",
+    messagingSenderId: "119969881677",
+    appId: "1:119969881677:web:1a1e6c5ad0c2139027c604",
+    measurementId: "G-LR45Q47GC0"
+    };
+    
+    // Inicializar Firebase solo si no está inicializado
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    document.getElementById("logout").addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const auth = getAuth();
+    signOut(auth).then(() => {
+        // El usuario ha cerrado sesión correctamente
+        localStorage.removeItem("username");
+        localStorage.removeItem("userType");
+        localStorage.removeItem("estado");
+
+        console.log("Sesión cerrada, redirigiendo al login...");
+        window.location.href = "../login/login.html"; // ✅ Ruta relativa correcta
+    }).catch((error) => {
+        console.error("Error al cerrar sesión:", error);
+    });
+});
+
+    </script>
+    
+
+</body>
+</html>

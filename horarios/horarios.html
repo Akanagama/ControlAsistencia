@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Horarios</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* Encabezado */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #151527; /* Fondo gris oscuro  |||  <link rel="stylesheet" href="/backend/horarios/horarios.css">*/
+        color: #ffffff; /* Texto blanco */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .menu-toggle {
+        cursor: pointer;
+    }
+
+    .menu-toggle .bar {
+        display: block;
+        width: 25px;
+        height: 3px;
+        margin: 4px 0;
+        background-color: #ffffff;
+    }
+
+    .view-title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    /* Contenedor principal */
+    .main-content {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 10px 20px;
+    }
+    
+    /* Menú lateral */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -250px; /* Menú escondido por defecto */
+        width: 250px;
+        height: 100%;
+        background-color: #2A2A44;
+        transition: left 0.3s;
+        padding-top: 60px;
+        z-index: 1000; /* Asegura que el menú se sobreponga */
+    }
+
+    .sidebar a {
+        padding: 10px 15px;
+        text-decoration: none;
+        font-size: 18px;
+        color: white;
+        display: block;
+        transition: 0.3s;
+    }
+
+    .sidebar a:hover {
+        background-color: #ddd;
+        color: black;
+    }
+
+    .sidebar.active {
+        left: 0; /* Muestra el menú cuando se activa */
+    }
+
+    /* General */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+    }
+
+    /* Estilo para el icono y el texto de usuario */
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Espaciado entre el icono y el texto */
+    }
+
+    .user-icon {
+        font-size: 24px; /* Tamaño del icono */
+        color: #fff; /* Color blanco */
+    }
+
+    .user-text {
+        font-size: 16px; /* Tamaño del texto */
+    }
+    
+/* Asegura que el dropdown se vea de manera apropiada */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  color: #333; /* Puedes cambiarlo al color que prefieras */
+  font-size: 16px; /* Ajusta el tamaño de la fuente si lo deseas */
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content label {
+  padding: 8px;
+  display: block;
+  cursor: pointer;
+}
+
+.dropdown-content label:hover {
+  background-color: #ddd;
+}
+
+.flatpickr-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flatpickr-calendar {
+    z-index: 9999 !important; /* Asegura que el selector de hora se muestre encima de otros elementos */
+}
+
+.flatpickr-time {
+    display: flex;
+    justify-content: center;
+}
+
+.flatpickr-time input {
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+#horaInicio {
+    width: 100px; /* Ajusta el ancho */
+    font-size: 14px; /* Reduce el tamaño del texto */
+    padding: 5px;
+    text-align: center;
+}
+
+#horaFin {
+    width: 100px; /* Ajusta el ancho */
+    font-size: 14px; /* Reduce el tamaño del texto */
+    padding: 5px;
+    text-align: center;
+}
+
+.flatpickr-calendar {
+    font-size: 12px !important; /* Hace más pequeño el menú */
+    max-width: 180px !important; /* Reduce el ancho */
+}
+
+.flatpickr-time {
+    font-size: 12px !important; /* Reduce la fuente de AM/PM */
+}
+
+.numInputWrapper {
+    max-width: 40px !important; /* Achica los números de horas/minutos */
+}   
+
+button {
+  cursor: pointer; /* Hace que el cursor se vea como una mano al pasar por encima */
+}
+
+button:hover {
+  background-color: #f0f0f0; /* Cambia el color del botón */
+  cursor: pointer; /* Hace que el cursor cambie a una mano */
+}
+
+/*Cerrar sesión*/
+        /* Estilos para el contenedor del usuario */
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* Estilos del menú desplegable */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            width: 150px;
+            z-index: 1000;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Mostrar el menú cuando tiene la clase 'active' */
+        .dropdown-menu.active {
+            display: block;
+        }
+
+      /*  /* Lista de eventos
+.lista-eventos {
+  /*flex: 1;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  min-width: 400px;
+  flex: 1;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  min-width: auto; /* Permite que se ajuste dinámicamente 
+  max-width: 50%;  /* Opcional: Limita su crecimiento si es necesario 
+
+} */
+
+.lista-eventos {
+  flex: 1;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 100%;  /* Ocupará el 100% del ancho disponible */
+  max-width: 500px; /* Ajusta según sea necesario */
+}
+
+.lista-eventos table {
+  width: 100%; /* Asegura que la tabla se expanda */
+  border-collapse: collapse;
+  table-layout: fixed; /* Opcional: ayuda a distribuir mejor las columnas */
+}
+
+.lista-eventos th, 
+.lista-eventos td {
+  border: 1px solid black;
+  padding: 10px;
+  text-align: center;
+  word-wrap: break-word; /* Evita que el texto se desborde */
+}
+
+.lista-eventos th {
+  background-color: #ddd; /* Mejor visibilidad */
+}
+
+</style>
+</head>
+<body>
+    <!-- Encabezado superior -->
+    <header class="header">
+        <div class="menu-toggle" id="menu-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+        <h1 class="view-title">Gestión de Horarios</h1>
+        <div class="user-info" id="userIcon">
+            <i class="fa fa-user user-icon"></i> <!-- Icono de usuario con la clase correcta -->
+            <span id="usernameDisplay" class="user-text">User</span>
+            <div class="dropdown-menu" id="userMenu">
+            <a href="#" id="logout">Cerrar sesión</a>
+        </div>
+    </header>
+
+        <!-- Menú lateral desplegable -->
+        <div class="sidebar" id="sidebar">
+            <a href="../dashboard/dashboard.html">Dashboard</a>
+            <a href="../monitoring/monitoring.html">Monitoreo de Asistencia</a>
+            <a href="../personal/personal.html">Personal</a>
+            <a href="../horarios/horarios.html">Gestión de Horarios</a>
+            <a href="../public/config.html">Configuración</a>
+        </div>
+
+  <main class="main-content" style="display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px;">
+    <!-- Contenedor superior -->
+    <section class="contenedor-superior" style="width: 80%; max-width: 1200px; display: flex; justify-content: space-between; gap: 20px; padding: 20px; background-color: #f1f1f1; border-radius: 8px;">
+        <!-- Contenedor 1 -->
+        <div style="flex: 1; min-width: 350px; max-width: 500px; background-color: #2A2A44; padding: 22px; border-radius: 8px; color: #fff;">
+            <h2>Ingreso de datos necesario para la gestión de horarios.</h2>
+            <div>
+                <label>Nombre del evento</label>
+                <input type="text" placeholder="Nombre del evento" style="width: 100%; max-width: 200px; margin: 7px 0; padding: 5px;">
+            </div>
+            <div>
+                <label>Tipo de evento</label>
+                <select style="width: 100%; max-width: 200px;   margin: 7px 0; padding: 5px;">
+                    <option>Tipo de evento</option>
+                    <option>Trabajo</option>
+                    <option>Clase/Curso</option>
+                    <option>Reunión</option>
+                    <option>Cita</option>
+                </select>
+            </div>
+            <div>
+                <label>Día(s) del evento</label>
+                <!-- Dropdown con casillas de verificación -->
+                <div class="dropdown">
+                    <button class="dropdown-btn" style="width: 100%; margin: 7px 0; padding: 5px;">Seleccionar Días</button>
+                    <div class="dropdown-content" style="width: 100%; margin: 7px 0; padding: 5px;">
+                        <label><input type="checkbox" class="dia-checkbox" value="Lunes"> Lunes</label><br>
+                        <label><input type="checkbox" class="dia-checkbox" value="Martes"> Martes</label><br>
+                        <label><input type="checkbox" class="dia-checkbox" value="Miércoles"> Miércoles</label><br>
+                        <label><input type="checkbox" class="dia-checkbox" value="Jueves"> Jueves</label><br>
+                        <label><input type="checkbox" class="dia-checkbox" value="Viernes"> Viernes</label><br>
+                        <label><input type="checkbox" class="dia-checkbox" value="Sábado"> Sábado</label><br>
+                        <label><input type="checkbox" class="dia-checkbox" value="Domingo"> Domingo</label><br>
+                    </div>
+                </div>
+                <!-- Días seleccionados -->
+                <div id="dias-seleccionados" style="margin-top: 10px; width: 100%; margin: 7px 0;">
+                    <strong>Días seleccionados:</strong> <span id="dias-lista">Ninguno</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between;">
+                <div style="max-width: 200px; flex: 1; margin: 7px 0;">
+                    <label>Hora inicio</label>
+                    <input type="text" id="horaInicio" placeholder="Hora de inicio">
+                </div>
+                <div style="max-width: 200px; flex: 1; margin: 7px 0;">
+                    <label>Hora fin</label>
+                    <input type="text" id="horaFin" placeholder="Hora de fin">
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                <button id="btnAgregarEvento" style="background-color: #fff; color: #333; padding: 5px 10px; border: none; border-radius: 4px;">Agregar Evento</button>
+              </div>
+        </div>
+
+        <!-- Contenedor 2 -->
+        <div style="flex: 1; min-width: 350px; max-width: 500px; background-color: #2A2A44; padding: 20px; border-radius: 8px; color: #fff;">
+          <h2>Actividades</h2>
+          <div>
+              <label>Tipo de Actividad</label>
+              <select id="tipo-actividad" style="width: 100%; max-width: 200px; margin: 5px 0; padding: 5px;">
+                  <option>Tipo de actividad</option>
+                  <option value="Trabajo">Trabajo</option>
+                  <option value="PracticasPreProfesionales">Prácticas pre profesionales</option>
+                  <option value="PracticasProfesionales">Prácticas profesionales</option>
+              </select>
+          </div>
+          <div>
+            <label>Horas necesarias</label>
+            <input type="time" id="horas-necesarias" value="08:00" style="width: 100%; max-width: 68px; margin: 5px 0; padding: 5px;" readonly>
+        </div>
+        <button id="btnAsignarEventos" style="margin-top: 10px; background-color: #fff; color: #333; padding: 10px; border: none; border-radius: 4px;">Asignar Eventos</button>
+        <button id="btnGenerarHorario" style="margin-top: 10px; background-color: #fff; color: #333; padding: 10px; border: none; border-radius: 4px;">Generar Horario</button>
+        <button id="btnExportarPDF" style="margin-top: 10px; background-color: #fff; color: #333; padding: 10px; border: none; border-radius: 4px;">Exportar a PDF</button>        
+    </div>
+    </section>
+
+    <!-- Contenedores inferiores (sin cambios) -->
+    <section class="contenedor-inferior" style="width: 80%; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+        <div class="tabla-horario" style="flex: 1; min-width: 300px; overflow-x: auto; background-color: #f4f4f4; border-radius: 8px; padding: 20px; border: 1px solid #ccc;">
+            <h3 style="text-align: center;">Horario</h3>
+            <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid black;">Hora</th>
+                        <th style="border: 1px solid black;">Lunes</th>
+                        <th style="border: 1px solid black;">Martes</th>
+                        <th style="border: 1px solid black;">Miércoles</th>
+                        <th style="border: 1px solid black;">Jueves</th>
+                        <th style="border: 1px solid black;">Viernes</th>
+                        <th style="border: 1px solid black;">Sábado</th>
+                        <th style="border: 1px solid black;">Domingo</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-horario-body">
+                    <!-- Las filas se generarán aquí -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+       <!-- <div class="tabla-eventos" style="flex: 1; min-width: 300px; overflow-x: auto; background-color: #f4f4f4; border-radius: 8px; padding: 15px; border: 1px solid #ccc;">
+    -->     <div class="tabla-eventos lista-eventos">
+            <h3 style="text-align: center;">Lista de Eventos</h3>
+            <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid black;">Evento</th>
+                        <th style="border: 1px solid black;">Día</th>
+                        <th style="border: 1px solid black;">Rango de Horas</th>
+                    </tr>
+                </thead>
+                <tbody id="eventos-tabla-body">
+                    <!-- Aquí se agregarán dinámicamente los eventos -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+
+</div>
+
+  <script>
+    // Manejo del menú hamburguesa
+    const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+    // Cerrar el menú una vez que se selecciona una vista
+    sidebar.classList.remove('active');
+
+    const dropdownBtn = document.querySelector('.dropdown-btn');
+  const dropdownContent = document.querySelector('.dropdown-content');
+
+  dropdownBtn.addEventListener('click', () => {
+    dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
+  });
+
+  // Cerrar el dropdown cuando se haga clic fuera de él
+document.addEventListener('click', (event) => {
+    if (!dropdownContent.contains(event.target) && event.target !== dropdownBtn) {
+        dropdownContent.style.display = 'none';
+    }});
+
+  // JavaScript para actualizar los días seleccionados
+  const checkboxes = document.querySelectorAll('.dia-checkbox');
+    const diasLista = document.getElementById('dias-lista');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const selectedDays = Array.from(checkboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+
+            if (selectedDays.length > 0) {
+                diasLista.textContent = selectedDays.join(', ');
+            } else {
+                diasLista.textContent = 'Ninguno';
+            }
+        });
+    });
+
+    // Función para actualizar las horas automáticamente
+    document.getElementById("tipo-actividad").addEventListener("change", function() {
+        const tipoActividad = this.value;
+        const horasInput = document.getElementById("horas-necesarias");
+
+        // Actualizar las horas necesarias según la actividad seleccionada
+        if (tipoActividad === "Trabajo") {
+            horasInput.value = "08:00";  // 8 horas para Trabajo
+        } else if (tipoActividad === "PracticasPreProfesionales") {
+            horasInput.value = "05:00";  // 6 horas para Prácticas pre profesionales
+        } else if (tipoActividad === "PracticasProfesionales") {
+            horasInput.value = "07:00";  // 7 horas para Prácticas profesionales
+        } else {
+            horasInput.value = "";  // Si no se selecciona ninguna actividad
+        }
+    });
+
+    document.getElementById('btnAgregarEvento').addEventListener('click', function(event) {
+    event.preventDefault(); // Asegura que no se ejecute ninguna acción inesperada
+
+    // Llamamos a la función para agregar el evento
+    agregarEvento();
+});
+
+    let eventos = [];  // Asegúrate de que esta variable esté definida globalmente
+
+    function agregarEvento() {
+    const nombreEvento = document.querySelector('input[placeholder="Nombre del evento"]').value;
+    const tipoEvento = document.querySelector('select').value;
+    const diasSeleccionados = Array.from(document.querySelectorAll('.dia-checkbox:checked')).map(checkbox => checkbox.value);
+    const horaInicio = document.getElementById('horaInicio').value;
+    const horaFin = document.getElementById('horaFin').value;
+
+    // Validar que todos los campos estén completos
+    if (!nombreEvento || tipoEvento === "Tipo de evento" || diasSeleccionados.length === 0 || !horaInicio || !horaFin) {
+        alert("Por favor, completa todos los campos antes de agregar el evento.");
+        return;
+    }
+
+    // Crear el rango de horas
+    const rangoHoras = `${horaInicio} a ${horaFin}`;
+
+    // Crear el objeto del evento
+    const evento = {
+        nombre: nombreEvento,
+        tipo: tipoEvento,
+        dias: diasSeleccionados.join(", "),
+        rangoHoras: rangoHoras, // Se guarda el rango de horas
+        horaInicio: horaInicio,
+        horaFin: horaFin
+    };
+
+    // Agregar el evento al array
+    eventos.push(evento);
+    console.log("Eventos después de agregar:", eventos);
+
+    // Actualizar la tabla de eventos
+    actualizarTabla();
+
+    // Limpiar los campos del formulario
+    limpiarFormulario();
+    }
+
+    // Función para limpiar los campos del formulario después de agregar el evento
+    function limpiarFormulario() {
+        document.querySelector('input[placeholder="Nombre del evento"]').value = '';
+        document.querySelector('select').value = 'Tipo de evento';
+        document.querySelectorAll('.dia-checkbox').forEach(checkbox => checkbox.checked = false);
+        document.getElementById('horaInicio').value = '';
+        document.getElementById('horaFin').value = '';
+    }
+
+    // Función para actualizar la tabla con los eventos
+    function actualizarTabla() {
+        const tablaBody = document.getElementById('eventos-tabla-body');
+        tablaBody.innerHTML = ''; // Limpiar la tabla antes de agregar los nuevos eventos
+
+        console.log("Actualizando la tabla con estos eventos:", eventos); // 🔍 Ver qué se está mostrando
+
+        eventos.forEach(evento => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${evento.nombre}</td>
+                <td>${evento.dias}</td>
+                <td>${evento.rangoHoras}</td> <!-- Mostrar el rango de horas -->
+            `;
+            tablaBody.appendChild(row);
+        });
+    }
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById('btnAgregarEvento').addEventListener('click', agregarEvento);
+});
+
+
+// Función para generar la tabla con identificadores únicos para cada celda
+// Función para generar la tabla con identificadores únicos para cada celda
+function generarTabla() {
+    const startHour = 7; // Hora inicial
+    const endHour = 22; // Hora final
+    const tablaBody = document.getElementById('tabla-horario-body'); // Referencia al tbody
+
+    for (let hour = startHour; hour < endHour; hour++) {
+        let displayHour = hour % 12; // Formato 12 horas
+        if (displayHour === 0) displayHour = 12; // Ajuste para 12 AM/PM
+        let ampm = hour < 12 ? 'AM' : 'PM'; // AM o PM
+
+        const tr = document.createElement('tr'); // Crear la fila
+        const horaTd = document.createElement('td');
+        horaTd.textContent = `${displayHour}:00 ${ampm}`;
+        horaTd.style.border = '1px solid black';
+        tr.appendChild(horaTd); // Añadir la hora
+
+        // Crear las celdas para los días con id único
+        for (let i = 0; i < 7; i++) {
+            const idCelda = `${hour - startHour + 1}${String.fromCharCode(65 + i)}`;
+            const td = document.createElement('td');
+            td.style.border = '1px solid black';
+            td.id = idCelda; // Asignar identificador (Ej: 9A para 9:00 AM Lunes)
+            tr.appendChild(td); // Añadir las celdas vacías
+
+            console.log(`✅ Celda generada: ${idCelda}`); // Verificar IDs generados
+        }
+
+        tablaBody.appendChild(tr); // Añadir la fila a la tabla
+    }
+}
+
+generarTabla();
+
+// Función para convertir las horas de 12 horas a 24 horas
+function convertirHora24(hora12) {
+    let [hora, minutoYperiodo] = hora12.split(":");
+    let [minuto, periodo] = minutoYperiodo.split(" ");
+    hora = parseInt(hora);
+
+    // Convertir hora a 24 horas
+    if (periodo === "PM" && hora !== 12) {
+        hora += 12;
+    } else if (periodo === "AM" && hora === 12) {
+        hora = 0;
+    }
+
+    return `${hora.toString().padStart(2, "0")}:${minuto}`;
+}
+
+// Función para obtener el nombre de la actividad seleccionada
+function obtenerNombreActividad() {
+        const tipoActividad = document.getElementById("tipo-actividad").value;
+        return tipoActividad === "Trabajo" ? "Trabajo" :
+               tipoActividad === "PracticasPreProfesionales" ? "Prácticas Pre." :
+               tipoActividad === "PracticasProfesionales" ? "Prácticas Prof." : "Horas Asignadas";
+    }
+
+// Mapeo de colores según el tipo de actividad
+const coloresActividades = {
+    "Trabajo": "#4169E1", // Azul
+    "PracticasPreProfesionales": "#FF4500", // Naranja fuerte
+    "PracticasProfesionales": "#228B22", // Verde
+};
+
+
+// Función para generar el horario sin eliminar celdas, solo ocultando las inferiores
+function asignarEventos() {
+    console.log('Botón Asignar Evento presionado');
+    const tablaHorario = document.querySelector('.tabla-horario tbody');
+    const filas = tablaHorario.getElementsByTagName('tr');
+
+    eventos.forEach(evento => {
+        const [horaInicio, horaFin] = [convertirHora24(evento.horaInicio), convertirHora24(evento.horaFin)];
+        const duracion = parseInt(horaFin.split(":")[0]) - parseInt(horaInicio.split(":")[0]);
+
+        evento.dias.split(', ').forEach(dia => {
+            const diaIndex = obtenerIndiceDia(dia);
+            if (diaIndex !== -1) {
+                let idCelda = `${parseInt(horaInicio.split(":")[0]) - 7 + 1}${diaIndex}`; // Ajuste aquí
+
+                // Verificar si todas las celdas necesarias están libres
+                let puedeInsertar = true;
+                for (let i = 0; i < duracion; i++) {
+                    let idCheck = `${parseInt(horaInicio.split(":")[0]) - 7 + 1 + i}${diaIndex}`; // Ajuste aquí
+                    if (disponibilidadCeldas[idCheck]) {
+                        puedeInsertar = false;
+                        break;
+                    }
+                }
+
+                if (puedeInsertar) {
+                    console.log(`Insertando "${evento.nombre}" en fila: ${parseInt(horaInicio.split(":")[0]) - 7}, columna: ${diaIndex}`);
+                    // Insertar evento
+                    const filaInicio = filas[parseInt(horaInicio.split(":")[0]) - 7];
+                    const celdaInicio = filaInicio.cells[diaIndex + 1]; // Ajuste aquí (sumar 1 por la columna de horas)
+                    celdaInicio.textContent = evento.nombre;
+                    celdaInicio.setAttribute("rowspan", duracion);
+                    celdaInicio.style.backgroundColor = "#FFD700"; 
+
+                    // Ocultar las celdas fusionadas
+                    for (let i = 1; i < duracion; i++) {
+                        const filaSiguiente = filas[parseInt(horaInicio.split(":")[0]) - 7 + i];
+                        if (filaSiguiente) {
+                            filaSiguiente.cells[diaIndex + 1].style.display = "none"; // Ajuste aquí
+                        }
+                    }
+
+                    // Marcar celdas ocupadas
+                    marcarCeldasOcupadas(evento);
+                }
+            }
+        });
+    });
+}
+
+// Función para obtener el índice del día (0 = Lunes, 1 = Martes, ..., 6 = Domingo)
+function obtenerIndiceDia(dia) {
+    const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    return dias.indexOf(dia);
+}
+
+let disponibilidadCeldas = {}; // Guarda estado de cada celda (disponible u ocupada)
+
+// Inicializar todas las celdas como disponibles
+function inicializarDisponibilidad() {
+    const startHour = 7;
+    const endHour = 22;
+    const dias = ['A', 'B', 'C', 'D', 'E', 'F', 'G']; // Lunes a Domingo
+
+    for (let hour = startHour; hour < endHour; hour++) {
+        dias.forEach(dia => {
+            let idCelda = `${hour - startHour + 1}${dia}`;
+            disponibilidadCeldas[idCelda] = false; // `false` significa disponible
+        });
+    }
+}
+
+inicializarDisponibilidad();
+
+function marcarCeldasOcupadas(evento) {
+    const [horaInicio, horaFin] = [convertirHora24(evento.horaInicio), convertirHora24(evento.horaFin)];
+    const duracion = parseInt(horaFin.split(":")[0]) - parseInt(horaInicio.split(":")[0]);
+
+    evento.dias.split(', ').forEach(dia => {
+        const diaIndex = obtenerIndiceDia(dia);
+        console.log(`Día: ${dia}, Índice obtenido: ${diaIndex}`);
+
+        if (diaIndex !== -1) {
+            for (let i = 0; i < duracion; i++) {
+                let idCelda = `${parseInt(horaInicio.split(":")[0]) - 7 + 1 + i}${String.fromCharCode(65 + diaIndex)}`;
+                let celda = document.getElementById(idCelda);
+
+                if (celda) { 
+                    disponibilidadCeldas[idCelda] = true; // Marcar celda como ocupada
+
+                    // ⚠️ Verificar si la celda está oculta por rowspan
+                    if (celda.style.display === "none") {
+                        console.warn(`⚠️ Celda oculta detectada: ${idCelda}, marcando como ocupada.`);
+                        disponibilidadCeldas[idCelda] = true;
+                    }
+                } else {
+                    console.warn(`⚠️ No se encontró la celda ${idCelda} en el DOM`);
+                }
+            }
+
+            // Marcar la celda anterior (si existe)
+            let idCeldaAntes = `${parseInt(horaInicio.split(":")[0]) - 7}${String.fromCharCode(65 + diaIndex)}`;
+            if (document.getElementById(idCeldaAntes)) {
+                disponibilidadCeldas[idCeldaAntes] = true;
+            }
+
+            // 🔥 Nueva lógica para marcar la celda posterior
+            let filaSiguiente = parseInt(horaInicio.split(":")[0]) - 7 + duracion;
+            let idCeldaDespues = `${filaSiguiente}${String.fromCharCode(65 + diaIndex)}`;
+            let celdaDespues = document.getElementById(idCeldaDespues);
+
+            while (celdaDespues && celdaDespues.style.display === "none") {
+                // Si la celda posterior está oculta, sigue buscando la siguiente visible
+                filaSiguiente++;
+                idCeldaDespues = `${filaSiguiente}${String.fromCharCode(65 + diaIndex)}`;
+                celdaDespues = document.getElementById(idCeldaDespues);
+            }
+
+            if (celdaDespues) {
+                disponibilidadCeldas[idCeldaDespues] = true;
+            }
+        }
+    });
+
+    console.log("🔍 Estado actualizado de disponibilidadCeldas:", disponibilidadCeldas);
+}
+
+// Función para actualizar el color de TODAS las celdas sin sobrescribir eventos/actividades
+function actualizarColoresTabla() {
+    console.log("🔍 Estado de disponibilidadCeldas antes de actualizar colores:", disponibilidadCeldas);
+
+    Object.keys(disponibilidadCeldas).forEach(idCelda => {
+        const celda = document.getElementById(idCelda);
+        if (celda) {
+            // Si la celda tiene contenido (es un evento o actividad), mantiene su color
+            if (!celda.textContent.trim()) {
+                celda.style.backgroundColor = "white"; // Solo las celdas vacías se vuelven blancas
+            }
+        } else {
+            console.warn(`⚠️ Celda no encontrada en el DOM: ${idCelda}`);
+        }
+    });
+
+    console.log("✅ Colores actualizados correctamente");
+}
+
+////// Funcion para Generar Horario...
+function generarHorarioAutomatico() {
+    console.log("\u2705 Generando horario automáticamente...");
+
+    const tipoActividad = document.getElementById("tipo-actividad").value;
+    if (!tipoActividad || tipoActividad === "Tipo de actividad") {
+        alert("Selecciona un tipo de actividad antes de generar el horario.");
+        return;
+    }
+
+    // Obtener las horas necesarias según el tipo de actividad
+    const horasNecesarias = {
+        "Trabajo": 8,
+        "PracticasPreProfesionales": 5,
+        "PracticasProfesionales": 7
+    }[tipoActividad];
+
+    let dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+    for (let dia of dias) {
+        let diaIndex = obtenerIndiceDia(dia);
+        if (diaIndex === -1) continue;
+
+        let horasPendientes = horasNecesarias;
+        let primeraCelda = null;
+        let celdasACombinar = [];
+
+        console.log(`\u2705 Revisando disponibilidad para: ${dia}`);
+
+        for (let hora = 7; hora < 22 && horasPendientes > 0; hora++) {
+            let idCelda = `${hora - 7 + 1}${String.fromCharCode(65 + diaIndex)}`;
+            let celda = document.getElementById(idCelda);
+
+            // 🛑 Si la celda no está disponible o está ocupada por otro evento, cerrar bloque y reiniciar
+            if (!celda || disponibilidadCeldas[idCelda] !== false || celda.hasAttribute("data-ocupado")) {
+                if (celdasACombinar.length > 1) {
+                    combinarCeldas(primeraCelda, celdasACombinar, tipoActividad);
+                }
+                // Reiniciar para un nuevo bloque
+                primeraCelda = null;
+                celdasACombinar = [];
+                continue;
+            }
+
+            // ✅ Si la celda está disponible, agregarla al bloque actual
+            if (!primeraCelda) {
+                primeraCelda = celda;
+            }
+            celdasACombinar.push(celda);
+            disponibilidadCeldas[idCelda] = true;
+            horasPendientes--;
+
+            console.log(`\u2705 Asignada hora ${hora}:00 en ${dia}`);
+        }
+
+        // 🛑 Al final del día, combinar si quedaron celdas pendientes
+        if (celdasACombinar.length > 1) {
+            combinarCeldas(primeraCelda, celdasACombinar, tipoActividad);
+        }
+
+        if (horasPendientes === 0) {
+            console.log(`\u2705 Se asignaron todas las horas para ${dia}`);
+        } else {
+            console.log(`\u26A0 No se completaron las ${horasNecesarias} horas en ${dia}, quedan ${horasPendientes} horas sin asignar.`);
+        }
+    }
+
+    actualizarColoresTabla();
+    console.log("\u2705 Horario generado correctamente.");
+}
+
+// ✅ Función para combinar celdas de un bloque contiguo
+function combinarCeldas(primeraCelda, celdas, tipoActividad) {
+    primeraCelda.textContent = obtenerNombreActividad();
+    primeraCelda.style.backgroundColor = coloresActividades[tipoActividad] || "#FFD700";
+    primeraCelda.setAttribute("rowspan", celdas.length);
+
+    // Ocultar las demás celdas combinadas
+    for (let i = 1; i < celdas.length; i++) {
+        celdas[i].style.display = "none";
+    }
+
+    console.log(`\u2705 Se combinaron ${celdas.length} celdas contiguas.`);
+}
+
+// Llamar a la función cuando se haga clic en "Generar horario"
+document.getElementById('btnAsignarEventos').addEventListener('click', function() {
+    asignarEventos();
+    actualizarColoresTabla();
+});
+
+document.getElementById('btnGenerarHorario').addEventListener('click', generarHorarioAutomatico);
+
+document.getElementById('btnExportarPDF').addEventListener('click', function() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'landscape', // Horizontal para que quepa mejor
+        unit: 'mm',
+        format: 'a4'
+    });
+
+    const tabla = document.querySelector('.tabla-horario'); // Captura la tabla de horarios
+
+    html2canvas(tabla, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 280; // Ajustar ancho
+        const imgHeight = (canvas.height * imgWidth) / canvas.width; // Mantener proporción
+
+        doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        doc.save('Horario.pdf'); // Guardar el PDF
+    });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+            const username = localStorage.getItem("username"); // Recuperar el usuario
+            if (username) {
+                const displayName = username.split('@')[0]; // Obtener solo la parte antes del '@'
+                document.getElementById("usernameDisplay").textContent = displayName;
+            }
+        });
+
+document.addEventListener("DOMContentLoaded", function() {
+    const userIcon = document.getElementById("userIcon");
+    const userMenu = document.getElementById("userMenu");
+    const logoutBtn = document.getElementById("logout");
+
+    // Alternar el menú al hacer clic en el usuario
+    userIcon.addEventListener("click", function(event) {
+        userMenu.classList.toggle("active");
+        event.stopPropagation(); // Evita que el clic se propague
+    });
+
+    // Cerrar el menú si se hace clic fuera de él
+    document.addEventListener("click", function(event) {
+        if (!userIcon.contains(event.target)) {
+            userMenu.classList.remove("active");
+        }
+    });
+
+    // Redirigir a login.html al hacer clic en "Cerrar sesión"
+    logoutBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/login";
+    });
+});
+
+    // Cerrar el menú al hacer clic fuera del mismo
+    document.addEventListener('click', (event) => {
+        if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+            sidebar.classList.remove('active');
+        }
+    });
+
+   </script>
+
+<script src="/assets/js/horarios.js"></script>
+
+</body>
+</html>

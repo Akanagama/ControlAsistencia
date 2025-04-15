@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Usuarios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="/assets/css/config.css">
+    <style>
+        /* Encabezado */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #151527; /* Fondo gris oscuro */
+            color: #ffffff; /* Texto blanco */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-toggle {
+            cursor: pointer;
+        }
+
+        .menu-toggle .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 4px 0;
+            background-color: #ffffff;
+        }
+
+        .view-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Contenedor principal */
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        /* Menú lateral */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px; /* Menú escondido por defecto */
+            width: 250px;
+            height: 100%;
+            background-color: #2A2A44;
+            transition: left 0.3s;
+            padding-top: 60px;
+            z-index: 1000; /* Asegura que el menú se sobreponga */
+        }
+
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .sidebar.active {
+            left: 0; /* Muestra el menú cuando se activa */
+        }
+
+        /* General */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 800px; /* Reducir el ancho máximo */
+            margin: 0 auto;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Estilo del icono y texto del usuario */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-icon {
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .user-text {
+            font-size: 16px;
+        }
+
+        .content-sections {
+            margin-top: 10px; /* Reduce el margen superior */
+            margin-bottom: 10px; /* Ajusta el margen inferior según prefieras */
+            padding: 0; /* Elimina cualquier padding si es necesario */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .content-sections {
+            margin-bottom: 10px;
+            margin-top: 0px;
+        }
+
+        .config-container {
+            padding: 20px;
+        }
+
+        /* Opciones y Usuarios */ /*
+        .user-form, .user-list {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }*/
+
+        /* Estilo para la sección de opciones vacía */
+        .options-section {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        /* Estilo para la sección de "Usuarios" en disposición horizontal */
+        .user-sections {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 30px;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .user-form {
+            flex: 1;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 200px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);        
+        }
+
+        /* Mejor organización de los campos */
+        .userForm form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .userForm label {
+            font-weight: bold;
+        }
+
+        .userForm input,
+        .userForm select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Alineación de botones */
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .user-list {
+            flex: 2; /* Permite que la tabla se adapte sin ocupar todo el espacio */
+            max-width: 600px; /* Limita el tamaño de la tabla */
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto; /* Permite desplazamiento si es necesario */
+        }
+
+        /* Mejorar la tabla */
+        .user-list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .user-list th,
+        .user-list td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .user-list th {
+            background-color: black;
+            color: white;
+        }
+
+        /* Estilos del modal */
+        .modal {
+            display: none; /* Inicialmente está oculto */
+            position: fixed;
+            z-index: 1; /* Se asegura de que el modal esté por encima del contenido */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Hace que el modal sea desplazable si el contenido es demasiado largo */
+            background-color: rgba(0, 0, 0, 0.4); /* Fondo oscuro semitransparente */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /*Cerrar sesión*/
+        /* Estilos para el contenedor del usuario */
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* Estilos del menú desplegable */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            width: 150px;
+            z-index: 1000;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Mostrar el menú cuando tiene la clase 'active' */
+        .dropdown-menu.active {
+            display: block;
+        }
+
+    </style>    
+</head>
+<body class="config-page">
+    <!-- Encabezado superior -->
+    <header class="header">
+        <div class="menu-toggle" id="menu-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+        <h1 class="view-title">Configuración</h1>
+        <div class="user-info" id="userIcon">
+            <i class="fa fa-user user-icon"></i> <!-- Icono de usuario con la clase correcta -->
+            <span id="usernameDisplay" class="user-text">User</span>
+            <div class="dropdown-menu" id="userMenu">
+            <a href="#" id="logout">Cerrar sesión</a>
+        </div>
+    </header>
+
+    <!-- Menú lateral desplegable -->
+    <div class="sidebar" id="sidebar">
+        <a href="../dashboard/dashboard.html">Dashboard</a>
+        <a href="../monitoring/monitoring.html">Monitoreo de Asistencia</a>
+        <a href="../personal/personal.html">Personal</a>
+        <a href="../horarios/horarios.html">Gestión de Horarios</a>
+        <a href="../public/config.html">Configuración</a>
+    </div>
+
+    <!-- Contenedor principal -->
+    <div class="config-container">
+        <!-- Botones de selección dentro del cuadro del formulario -->
+        <div class="content-sections">
+            <button onclick="showSection('opciones')">Opciones</button>
+            <button onclick="showSection('usuarios')">Usuarios</button>
+        </div>
+
+        <div class="content">
+            <!-- Sección Opciones -->
+            <div id="opciones" class="opciones-container">
+                <div class="menu-opciones">
+                    <h3>Lista de Opciones:</h3>
+                    <ul>
+                        <li>
+                            <span onclick="mostrarSubOpciones('cargos', this)">📋 Cargos</span>
+                            <div class="subopciones"></div>
+                        </li>
+                        <li>
+                            <span onclick="mostrarSubOpciones('puestos', this)">👥 Puestos</span>
+                            <div class="subopciones"></div>
+                        </li>
+                        <li>
+                            <span onclick="mostrarSubOpciones('modalidades', this)">📜 Modalidades</span>
+                            <div class="subopciones"></div>
+                        </li>
+                        <li>
+                            <span onclick="mostrarSubOpciones('areas', this)">🛠️ Areas</span>
+                            <div class="subopciones"></div>
+                        </li>
+                        <li>
+                            <span onclick="mostrarSubOpciones('turnos', this)">👥 Turnos</span>
+                            <div class="subopciones"></div>
+                        </li>
+                    </ul>
+                </div>
+            
+                <!-- Área de contenido dinámico -->
+                <div class="contenido-opciones" id="contenidoOpciones">
+                    <div class="placeholder">Selecciona una opción para ver su contenido.</div>
+                               
+                    <!-- Tabla de cargos (inicialmente oculta) -->
+                    <div id="cargosList" style="display: none;">
+                        <table id="cargosTable">
+                            <thead>
+                                <tr>
+                                    <th>Nombre Cargo</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Los datos de los cargos se agregarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                        <!-- Tabla de puestos (inicialmente oculta) -->
+                    <div id="puestosList" style="display: none;">
+                        <table id="puestosTable">
+                            <thead>
+                                <tr>
+                                    <th>Nombre Puesto</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Los datos de los puestos se agregarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tabla de modalidades (inicialmente oculta) -->
+                    <div id="modalidadesList" style="display: none;">
+                        <table id="modalidadesTable">
+                            <thead>
+                                <tr>
+                                    <th>Nombre Modalidad</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Los datos de los puestos se agregarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tabla de areas (inicialmente oculta) -->
+                    <div id="areasList" style="display: none;">
+                        <table id="areasTable">
+                            <thead>
+                                <tr>
+                                    <th>Nombre Area</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Los datos de los puestos se agregarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tabla de turnos (inicialmente oculta) -->
+                    <div id="turnosList" style="display: none;">
+                        <table id="turnosTable">
+                            <thead>
+                                <tr>
+                                    <th>Nombre Turno</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Los datos de los puestos se agregarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Sección Usuarios (Formulario de registro y lista de usuarios) -->
+            <div id="usuarios" class="hidden">
+                <div class="user-sections">
+                    <!-- Formulario de usuario -->
+                    <div class="userForm">
+                        <h3>Registrar Nuevo Usuario</h3>
+                        <form id="user-form">
+                            <input type="email" id="email" placeholder="Correo electrónico" required>
+                            <input type="password" id="password" placeholder="Contraseña" required>
+                            <select id="userType">
+                                <option value="administrador">Administrador</option>
+                                <option value="usuario">Usuario</option>
+                                <option value="editor">Editor</option>
+                            </select>
+                            <button type="submit">Registrar Usuario</button>
+                            <button type="reset">Limpiar</button>
+                        </form>                        
+                    </div>
+
+                    <!-- Lista de usuarios -->
+                    <div class="user-list">
+                        <h3>Lista de Usuarios</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Contraseña</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                                <tr>
+                                    <td>Juan Pérez</td>
+                                    <td>********</td>
+                                    <td>Administrador</td>
+                                    <td>Activo</td>
+                                </tr>
+                                <!-- Aquí se agregan más usuarios dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <script type="module">
+
+            document.addEventListener("DOMContentLoaded", function () {
+                        showSection('opciones'); // Muestra automáticamente la sección "Opciones"
+                    });   
+                    
+        // Importar Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        // Configuración de Firebase
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+        apiKey: "AIzaSyA6DLJMhI__pHccfQAKP-SG1JtDTh2MTU8",
+        authDomain: "controlasistencia-366c2.firebaseapp.com",
+        projectId: "controlasistencia-366c2",
+        storageBucket: "controlasistencia-366c2.firebasestorage.app",
+        messagingSenderId: "119969881677",
+        appId: "1:119969881677:web:1a1e6c5ad0c2139027c604",
+        measurementId: "G-LR45Q47GC0"
+        };
+        
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById("user-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const userType = document.getElementById("userType").value;
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            console.log("Usuario registrado:", userCredential.user);
+
+            await setDoc(doc(db, "usuarios", email), {
+            tipo: userType,
+            estado: "Activo"
+            });
+
+            console.log("Usuario guardado en Firestore");
+            alert("Usuario registrado con éxito");
+
+            // <<<<< AQUI recargas la tabla >>>>>
+            await cargarUsuarios();
+
+            // Opcional: limpiar formulario
+            document.getElementById("user-form").reset();
+
+        } catch (error) {
+            console.error("Error en el registro:", error);
+            alert("Error en el registro: " + error.message);
+        }
+        });
+
+        async function cargarUsuarios() {
+            console.log("Cargando usuarios..."); // Para depurar
+
+            const userTableBody = document.getElementById("userTableBody");
+            userTableBody.innerHTML = ""; // Asegurar que se limpia antes de insertar datos nuevos
+
+            const querySnapshot = await getDocs(collection(db, "usuarios"));
+            querySnapshot.forEach((docSnap) => {
+                const userData = docSnap.data();
+                const email = docSnap.id; // El ID del documento es el email
+
+                const row = `
+                    <tr>
+                        <td>${email}</td>
+                        <td>******</td>
+                        <td>${userData.tipo}</td>
+                        <td>${userData.estado}</td>
+                    </tr>
+                `;
+                userTableBody.insertAdjacentHTML("beforeend", row); // Método más seguro que innerHTML +=
+            });
+
+            console.log("Usuarios cargados correctamente.");
+        }
+
+        // Asegurar que solo se ejecuta una vez
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!window.usuariosCargados) {
+                cargarUsuarios();
+                window.usuariosCargados = true; // Marcar como ejecutado
+            }
+        });
+
+        // Cargar nombre de usuario desde localStorage
+        document.addEventListener("DOMContentLoaded", () => {
+                const username = localStorage.getItem("username");
+                if (username) {
+                    const displayName = username.split('@')[0];
+                    document.getElementById("usernameDisplay").textContent = displayName;
+                }
+            });
+
+        document.addEventListener("DOMContentLoaded", function () {
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+        }
+
+        // Cerrar el menú al hacer clic fuera del mismo
+        document.addEventListener('click', (event) => {
+            if (sidebar && menuToggle) { // Asegurar que los elementos existen
+                if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+            });
+        });
+
+        // Enviar un nuevo cargo a Firestore
+document.getElementById('formCargos')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const cargoName = document.getElementById('cargoName').value;
+    const descCargo = document.getElementById('descCargo').value;
+
+    try {
+        // Referencia a la colección de cargos en Firestore
+        const cargosCollection = collection(db, "cargos");
+
+        // Agregar el nuevo cargo a Firestore
+        await addDoc(cargosCollection, {
+            nombrecargo: cargoName,
+            descpcargo: descCargo
+        });
+
+        alert('Cargo registrado con éxito');
+        closeModal('modalCargos');  // Cierra el modal después de enviar los datos
+        mostrarCargos();  // Actualiza la lista de cargos
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al registrar el cargo');
+    }
+});
+
+// Enviar un nuevo puesto a Firestore
+document.getElementById('formPuestos')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const puestoName = document.getElementById('puestoName').value;
+    const descPuesto = document.getElementById('descPuesto').value;
+
+    try {
+        // Referencia a la colección de puestos en Firestore
+        const puestosCollection = collection(db, "puestos");
+
+        // Agregar el nuevo puesto a Firestore
+        await addDoc(puestosCollection, {
+            nombrepuesto: puestoName,
+            descppuesto: descPuesto
+        });
+
+        alert('Puesto registrado con éxito');
+        closeModal('modalPuestos');
+        mostrarPuestos();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al registrar el puesto');
+    }
+});
+
+// Manejo del envío del formulario para agregar una modalidad
+document.getElementById('formModalidades')?.addEventListener('submit', async function (e) {
+    e.preventDefault();  // Evita que el formulario se envíe de forma tradicional
+
+    const modalidadName = document.getElementById('modalidadName').value;
+    const descpModalidad = document.getElementById('descpModalidad').value;
+
+    try {
+        // Agregar la modalidad a Firestore
+        const docRef = await addDoc(collection(db, "modalidades"), {
+            nombremodalidad: modalidadName,
+            descpmodalidad: descpModalidad
+        });
+
+        alert('Modalidad registrada con éxito');
+        closeModal('modalModalidades');  // Cierra el modal después de enviar los datos
+        mostrarModalidades(); // Actualiza la lista de modalidades
+    } catch (error) {
+        console.error('Error al registrar la modalidad:', error);
+        alert('Hubo un error al registrar la modalidad');
+    }
+});
+
+// Manejo del envío del formulario para agregar un área
+document.getElementById('formAreas')?.addEventListener('submit', async function (e) {
+    e.preventDefault();  // Evita que el formulario se envíe de forma tradicional
+
+    const areaName = document.getElementById('areaName').value;
+    const descArea = document.getElementById('descArea').value;
+
+    try {
+        // Agregar el área a Firestore
+        const docRef = await addDoc(collection(db, "areas"), {
+            nombrearea: areaName,
+            descparea: descArea
+        });
+
+        alert('Área registrada con éxito');
+        closeModal('modalAreas');  // Cierra el modal después de enviar los datos
+        mostrarAreas();  // Actualiza la lista de áreas
+    } catch (error) {
+        console.error('Error al registrar el área:', error);
+        alert('Hubo un error al registrar el área');
+    }
+});
+
+// Manejo del envío del formulario para agregar un turno
+document.getElementById('formTurno')?.addEventListener('submit', async function (e) {
+    e.preventDefault();  // Evita que el formulario se envíe de forma tradicional
+
+    const turnoName = document.getElementById('turnoName').value;
+    const descTurno = document.getElementById('descTurno').value;
+    const horaIngreso = document.getElementById('horaIngreso').value; // Obtener el valor de horaIngreso
+
+    try {
+        // Agregar el turno a Firestore
+        const docRef = await addDoc(collection(db, "turnos"), {
+            nombreturno: turnoName,
+            descpturno: descTurno,
+            horaIngreso: horaIngreso
+        });
+
+        alert('Turno registrado con éxito');
+        closeModal('modalTurnos');  // Cierra el modal después de enviar los datos
+        mostrarTurnos(); // Actualiza la lista de turnos
+    } catch (error) {
+        console.error('Error al registrar el turno:', error);
+        alert('Hubo un error al registrar el turno');
+    }
+});
+
+window.db = db;
+window.collection = collection;
+window.getDocs = getDocs;
+
+
+    </script>
+
+    <!-- Modal para Cargos -->
+    <div id="modalCargos" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modalCargos')">&times;</span>
+            <h3>Registrar Cargo</h3>
+            <form id="formCargos">
+                <label for="cargoName">Nombre del Cargo</label>
+                <input type="text" id="cargoName" name="cargo" required>
+                <label for="descCargo">Descripción del Cargo</label>
+                <input type="text" id="descCargo" name="descCargo" required>
+                <button type="submit">Registrar Cargo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Puestos -->
+    <div id="modalPuestos" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modalPuestos')">&times;</span>
+            <h3>Registrar Puesto</h3>
+            <form id="formPuestos">
+                <label for="puestoName">Nombre del Puesto</label>
+                <input type="text" id="puestoName" name="puesto"  required>
+                <label for="descPuesto">Descripción del Puesto</label>
+                <input type="text" id="descPuesto" name="descPuesto" required>
+                <button type="submit">Registrar Puesto</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Modalidades -->
+    <div id="modalModalidades" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modalModalidades')">&times;</span>
+            <h3>Registrar Modalidad</h3>
+            <form id="formModalidades">
+                <label for="modalidadName">Nombre de la Modalidad</label>
+                <input type="text" id="modalidadName" name="modalidad"  required>
+                <label for="descModalidad">Descripción de la Modalidad</label>
+                <input type="text" id="descpModalidad" name="descModalidad" required>
+                <button type="submit">Registrar Modalidad</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Areas -->
+    <div id="modalAreas" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modalAreas')">&times;</span>
+            <h3>Registrar Area</h3>
+            <form id="formAreas">
+                <label for="areaName">Nombre del Puesto</label>
+                <input type="text" id="areaName" name="area"  required>
+                <label for="descArea">Descripción del Puesto</label>
+                <input type="text" id="descArea" name="descArea" required>
+                <button type="submit">Registrar Area</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Turnos -->
+    <div id="modalTurnos" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modalTurnos')">&times;</span>
+            <h3>Registrar Turno</h3>
+            <form id="formTurno">
+                <label for="turnoName">Nombre del Turno</label>
+                <input type="text" id="turnoName" name="turno" required>
+                <label for="descTurno">Descripción del Turno</label>
+                <input type="text" id="descTurno" name="descTurno" required>
+                <label for="horaIngreso">Hora de Ingreso</label>
+                <input type="time" id="horaIngreso" name="horaIngreso" required> <!-- Nuevo campo para hora de ingreso -->
+                <button type="submit">Registrar Turno</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+        // Función para mostrar u ocultar el menú lateral (hamburguesa)
+function toggleMenu() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('active');
+}
+
+// Función para mostrar subopciones en el menú de "Opciones"
+function mostrarSubOpciones(opcion, elemento) {
+    // Definir las subopciones para cada categoría
+    const opciones = {
+        cargos: ['➕ Agregar Cargo', '📄 Listar Cargos'],
+        puestos: ['➕ Agregar Puesto', '📄 Listar Puestos'],
+        modalidades: ['➕ Agregar Modalidad', '📄 Listar Modalidades'],
+        areas: ['➕ Agregar Area', '📄 Listar Areas'],
+        turnos: ['➕ Agregar Turno', '📄 Listar Turnos'],
+    };
+
+    // El contenedor de subopciones asociado al elemento clickeado
+    const contenedor = elemento.nextElementSibling;
+
+    // Si ya está visible, ocultarlo y salir
+    if (contenedor.style.display === "block") {
+        contenedor.style.display = "none";
+        contenedor.innerHTML = ""; // Limpiar contenido
+        return;
+    }
+
+    // Ocultar todas las demás subopciones antes de mostrar la nueva
+    document.querySelectorAll('.subopciones').forEach((subopcion) => {
+        subopcion.style.display = "none";
+        subopcion.innerHTML = "";
+    });
+
+    // Si la opción tiene subopciones, renderízalas
+    if (opciones[opcion]) {
+        const lista = document.createElement('ul');
+        opciones[opcion].forEach((subopcion) => {
+            const item = document.createElement('li');
+            item.textContent = subopcion;
+            
+            // Si se hace clic en "Agregar Cargo", mostrar el modal
+            if (subopcion === '➕ Agregar Cargo') {
+                item.addEventListener('click', () => {
+                    mostrarModalCargos();  // Llamamos a la función para mostrar el modal
+                });
+            } else if (subopcion === '📄 Listar Cargos') {
+                // Si se hace clic en "Listar Cargos", mostrar los cargos
+                item.addEventListener('click', () => {
+                    mostrarCargos();  // Mostrar los cargos al hacer clic en "Listar Cargos"
+                });
+            } else if (subopcion === '➕ Agregar Puesto') {
+                item.addEventListener('click', () => {
+                    mostrarModalPuestos();  // Mostrar el modal de Puestos
+                });
+            } else if (subopcion === '📄 Listar Puestos') {
+                item.addEventListener('click', () => {
+                    mostrarPuestos();  // Mostrar los puestos en la tabla
+                });
+            } else if (subopcion === '➕ Agregar Modalidad') {
+                item.addEventListener('click', () => {
+                    mostrarModalModalidades();  // Mostrar el modal de Puestos
+                });
+            } else if (subopcion === '📄 Listar Modalidades') {
+                item.addEventListener('click', () => {
+                    mostrarModalidades();  // Mostrar los puestos en la tabla
+                });
+            } else if (subopcion === '➕ Agregar Area') {
+                item.addEventListener('click', () => {
+                    mostrarModalAreas();  // Mostrar el modal de Puestos
+                });
+            } else if (subopcion === '📄 Listar Areas') {
+                item.addEventListener('click', () => {
+                    mostrarAreas();  // Mostrar los puestos en la tabla
+                });
+            } else if (subopcion === '➕ Agregar Turno') {
+                item.addEventListener('click', () => {
+                    mostrarModalTurnos();  // Mostrar el modal de Puestos
+                });
+            } else if (subopcion === '📄 Listar Turnos') {
+                item.addEventListener('click', () => {
+                    mostrarTurnos();  // Mostrar los puestos en la tabla
+                });
+            } else {
+                item.addEventListener('click', () => {
+                    alert(`Seleccionaste: ${subopcion}`);
+                });
+            }
+            lista.appendChild(item);
+        });
+
+        // Agregar la lista al contenedor y mostrarla
+        contenedor.appendChild(lista);
+        contenedor.style.display = "block";
+    }
+}
+
+// Función para mostrar los cargos en la tabla
+async function mostrarCargos() {
+    // Mostrar la tabla de cargos
+    document.getElementById("cargosList").style.display = "block";
+    // Ocultar el mensaje de placeholder
+    document.querySelector(".placeholder").style.display = "none";
+
+    try {
+        const cargosCollection = window.collection(window.db, "cargos");
+        const querySnapshot = await window.getDocs(cargosCollection);
+
+        // Limpiar la tabla antes de agregar nuevos cargos
+        const cargosTableBody = document.querySelector('#cargosTable tbody');
+        cargosTableBody.innerHTML = "";
+
+        // Iterar sobre los documentos y agregar filas a la tabla
+        querySnapshot.forEach(doc => {
+            const cargo = doc.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${cargo.nombrecargo}</td>
+                <td>${cargo.descpcargo}</td>
+            `;
+            cargosTableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error al obtener los cargos:", error);
+        alert("Hubo un error al cargar los cargos.");
+    }
+}
+
+// Funciones para mostrar el modal correspondiente
+function mostrarModalCargos() {
+    document.getElementById('modalCargos').style.display = 'block';
+}
+
+// Función para mostrar los puestos en la tabla
+async function mostrarPuestos() {
+    document.getElementById("puestosList").style.display = "block";
+    document.querySelector(".placeholder").style.display = "none";
+
+    try {
+        const puestosCollection = window.collection(window.db, "puestos");
+        const querySnapshot = await window.getDocs(puestosCollection);
+
+        const puestosTableBody = document.querySelector('#puestosTable tbody');
+        puestosTableBody.innerHTML = "";
+
+        querySnapshot.forEach(doc => {
+            const puesto = doc.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${puesto.nombrepuesto}</td>
+                <td>${puesto.descppuesto}</td>
+            `;
+            puestosTableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error al obtener los puestos:", error);
+        alert("Hubo un error al cargar los puestos.");
+    }
+}
+
+function mostrarModalPuestos() {
+    document.getElementById('modalPuestos').style.display = 'block';
+}
+
+// Función para mostrar las modalidades en la tabla
+async function mostrarModalidades() {
+    // Mostrar la tabla de modalidades
+    document.getElementById("modalidadesList").style.display = "block";
+    document.querySelector(".placeholder").style.display = "none";
+
+    try {
+        // Obtener las modalidades desde Firestore
+        const querySnapshot = await window.getDocs(window.collection(window.db, "modalidades"));
+        const modalidadesTableBody = document.querySelector('#modalidadesTable tbody');
+        modalidadesTableBody.innerHTML = "";  // Limpiar la tabla antes de agregar nuevos datos
+
+        querySnapshot.forEach((doc) => {
+            const modalidad = doc.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${modalidad.nombremodalidad}</td>
+                <td>${modalidad.descpmodalidad}</td>
+            `;
+            modalidadesTableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error al obtener las modalidades:", error);
+        alert("Hubo un error al cargar las modalidades.");
+    }
+}
+
+function mostrarModalModalidades() {
+    document.getElementById('modalModalidades').style.display = 'block';
+}
+
+// Función para mostrar las áreas en la tabla
+async function mostrarAreas() {
+    // Mostrar la tabla de áreas
+    document.getElementById("areasList").style.display = "block";
+    document.querySelector(".placeholder").style.display = "none";
+
+    try {
+        // Obtener las áreas desde Firestore usando window.collection y window.getDocs
+        const querySnapshot = await window.getDocs(window.collection(window.db, "areas"));
+        const areasTableBody = document.querySelector('#areasTable tbody');
+        areasTableBody.innerHTML = "";  // Limpiar la tabla antes de agregar nuevos datos
+
+        querySnapshot.forEach((doc) => {
+            const area = doc.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${area.nombrearea}</td>
+                <td>${area.descparea}</td>
+            `;
+            areasTableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error al obtener las áreas:", error);
+        alert("Hubo un error al cargar las áreas.");
+    }
+}
+
+function mostrarModalAreas() {
+    document.getElementById('modalAreas').style.display = 'block';
+}
+
+// Función para mostrar los turnos en la tabla
+async function mostrarTurnos() {
+    // Mostrar la tabla de turnos
+    document.getElementById("turnosList").style.display = "block";
+    document.querySelector(".placeholder").style.display = "none";
+
+    try {
+        // Obtener los turnos desde Firestore usando window.collection y window.getDocs
+        const querySnapshot = await window.getDocs(window.collection(window.db, "turnos"));
+        const turnosTableBody = document.querySelector('#turnosTable tbody');
+        turnosTableBody.innerHTML = "";  // Limpiar la tabla antes de agregar nuevos datos
+
+        querySnapshot.forEach((doc) => {
+            const turno = doc.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${turno.nombreturno}</td>
+                <td>${turno.descpturno}</td>
+                <td>${turno.horaIngreso}</td>
+            `;
+            turnosTableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error al obtener los turnos:", error);
+        alert("Hubo un error al cargar los turnos.");
+    }
+}
+
+function mostrarModalTurnos() {
+    document.getElementById('modalTurnos').style.display = 'block';
+}
+
+// Función para cerrar cualquier modal
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+        // Función para mostrar la sección seleccionada
+        function showSection(section) {
+            // Oculta todas las secciones
+            document.getElementById("opciones").classList.add("hidden");
+            document.getElementById("usuarios").classList.add("hidden");
+
+            // Muestra la sección seleccionada
+            document.getElementById(section).classList.remove("hidden");
+        }
+
+        // Cerrar el menú una vez que se selecciona una vista
+        sidebar.classList.remove('active');
+
+        /*
+        document.addEventListener("DOMContentLoaded", () => {
+            const userType = localStorage.getItem("userType");
+    
+            // Verificar si el usuario es administrador
+            if (userType !== 'ADMINISTRADOR') {
+                alert("No tienes permiso para acceder a esta página.");
+                window.location.href = '/dashboard/dashboard.html'; // Redirigir a la página de inicio o a otra página
+            }
+        }); */
+        
+        document.addEventListener("DOMContentLoaded", function() {
+    const userIcon = document.getElementById("userIcon");
+    const userMenu = document.getElementById("userMenu");
+    const logoutBtn = document.getElementById("logout");
+
+    // Alternar el menú al hacer clic en el usuario
+    userIcon.addEventListener("click", function(event) {
+        userMenu.classList.toggle("active");
+        event.stopPropagation(); // Evita que el clic se propague
+    });
+
+    // Cerrar el menú si se hace clic fuera de él
+    document.addEventListener("click", function(event) {
+        if (!userIcon.contains(event.target)) {
+            userMenu.classList.remove("active");
+        }
+    });
+
+    // Redirigir a login.html al hacer clic en "Cerrar sesión"
+    logoutBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/login/login.html";
+    });
+});
+
+</script>
+<body class="config-page">
+</html>

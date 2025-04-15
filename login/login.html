@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <!-- Ruta adaptada a la estructura estática -->
+    <link rel="stylesheet" href="../assets/css/login.css">
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Imagen a la izquierda -->
+        <div class="login-image">
+            <!-- Ruta de la imagen adaptada -->
+            <img src="../assets/images/imagen01.png" alt="Login image">
+        </div>
+
+        <!-- Formulario a la derecha -->
+        <div class="login-form">
+            <div id="error-message" class="message error" style="display: none;"></div>
+            <div id="success-message" class="message success" style="display: none;"></div>
+            <h1>Iniciar sesión</h1>
+            <form id="loginForm" action="javascript:void(0);"> <!-- Cambié la acción del formulario ya que no necesitas hacer POST a un servidor -->
+                <div class="input-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" placeholder="Correo Electrónico" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Contraseña</label>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" placeholder="Contraseña" required>
+                        <span class="toggle-password">👁️</span>
+                    </div>
+                </div>
+                <button type="submit">Iniciar sesión</button>
+            </form> 
+
+            <div class="links">
+                <!-- Ruta adaptada para la página de "olvidó la contraseña" -->
+                <a href="../login/forgot-password.html">¿Olvidaste tu contraseña?</a>
+            </div>
+            
+        </div>
+    </div>
+    
+    <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6DLJMhI__pHccfQAKP-SG1JtDTh2MTU8",
+            authDomain: "controlasistencia-366c2.firebaseapp.com",
+            projectId: "controlasistencia-366c2",
+            storageBucket: "controlasistencia-366c2.firebasestorage.app",
+            messagingSenderId: "119969881677",
+            appId: "1:119969881677:web:1a1e6c5ad0c2139027c604",
+            measurementId: "G-LR45Q47GC0"
+        };
+        
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // Importar módulos de Firebase después de la inicialización
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        // Obtener instancias después de la inicialización
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+      
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginForm = document.getElementById("loginForm");
+            const passwordInput = document.getElementById("password");
+            const togglePassword = document.querySelector(".toggle-password");
+            const errorMessage = document.getElementById("error-message");
+            const successMessage = document.getElementById("success-message");
+
+            // Mostrar/ocultar contraseña
+            togglePassword.addEventListener("click", () => {
+                const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+                passwordInput.setAttribute("type", type);
+                togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+            });
+
+            // Lógica de login
+            loginForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const email = document.getElementById("email").value.trim();
+                const password = document.getElementById("password").value.trim();
+
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    // Buscar información del usuario en Firestore
+                    const docRef = doc(db, "usuarios", email);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+
+                        localStorage.setItem("username", email);
+                        localStorage.setItem("userType", userData.tipo);
+                        localStorage.setItem("estado", userData.estado);
+
+                        successMessage.textContent = "✅ Inicio de sesión exitoso.";
+                        successMessage.style.display = "block";
+                        errorMessage.style.display = "none";
+
+                        setTimeout(() => {
+                            window.location.href = "../dashboard/dashboard.html";  // Redirección a dashboard
+                        }, 1500);
+                    } else {
+                        errorMessage.textContent = "❌ Usuario registrado pero sin datos.";
+                        errorMessage.style.display = "block";
+                        successMessage.style.display = "none";
+                    }
+                } catch (error) {
+                    console.error("Error al iniciar sesión:", error);
+                    switch (error.code) {
+                        case 'auth/user-not-found':
+                            errorMessage.textContent = "❌ Usuario no registrado. Por favor, verifica tu correo o regístrate.";
+                            break;
+                        case 'auth/wrong-password':
+                            errorMessage.textContent = "❌ Contraseña incorrecta. Intenta nuevamente.";
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage.textContent = "❌ Formato de correo inválido.";
+                            break;
+                        case 'auth/invalid-credential':
+                            errorMessage.textContent = "❌ Credenciales inválidas. Verifica tu correo y contraseña.";
+                            break;
+                        case 'auth/too-many-requests':
+                            errorMessage.textContent = "⚠️ Demasiados intentos fallidos. Espera unos minutos e intenta de nuevo.";
+                            break;
+                        case 'auth/network-request-failed':
+                            errorMessage.textContent = "📡 Error de red. Revisa tu conexión a internet.";
+                            break;
+                        default:
+                            errorMessage.textContent = "❌ " + error.message;
+                            break;
+                    }
+                    errorMessage.style.display = "block";
+                    successMessage.style.display = "none";
+                }
+            });
+        });
+    </script>    
+</body>
+</html>

@@ -1,0 +1,234 @@
+/* ========== Estilos Generales ========== */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden; /* Previene scroll horizontal */
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 50px; /* Espacio para el footer */
+}
+
+/* ========== Encabezado (Header) ========== */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #4A4A4A;
+    color: white;
+    padding: 10px 20px;
+}
+
+.menu-toggle {
+    cursor: pointer;
+}
+
+.bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 4px;
+    background-color: white;
+}
+
+.view-title {
+    font-size: 24px;
+    margin: 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* ========== Menú Lateral (Sidebar) ========== */
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -250px; /* Oculto inicialmente */
+    width: 250px;
+    height: 100%;
+    background: #333;
+    color: white;
+    padding-top: 60px;
+    transition: left 0.3s ease-in-out;
+}
+
+.side-menu.open {
+    left: 0; /* Visible cuando se abre */
+}
+
+.side-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.side-menu ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 15px 20px;
+    display: block;
+}
+
+.side-menu ul li a:hover {
+    background-color: #575757;
+}
+
+/* ========== Contenido Principal ========== */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 20px;
+    width: 90%;
+    margin: auto;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+/* ========== Cuadros de Métricas ========== */
+.metric-box {
+    background-color: #ffffff;
+    padding: 20px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metric-box h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.metric-box p {
+    font-size: 36px;
+    margin-top: 10px;
+    color: #4A4A4A;
+}
+
+/* Posicionamiento en el grid */
+.box-1 { grid-column: 1; grid-row: 1; }
+.box-2 { grid-column: 2; grid-row: 1; }
+.box-4 { grid-column: 3; grid-row: 1; }
+.box-3 { grid-column: 1 / span 3; grid-row: 2; }
+
+/* ========== Sección de Gráfico ========== */
+.dashboard-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 20px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    text-align: center;
+    width: 95%;
+    max-width: 1100px;
+}
+
+.chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ========== Botones ========== */
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.2em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* ========== Footer ========== */
+footer {
+    background-color: #151527;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: relative;
+    width: 100%;
+    height: 50px;
+}
+
+/* ========== Pantalla de Carga ========== */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+.loading-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #333;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
